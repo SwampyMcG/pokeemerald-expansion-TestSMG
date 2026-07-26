@@ -1,0 +1,41 @@
+{
+  "id": "MAP_RISING_ROCK",
+  "name": "RisingRock",
+  "layout": "LAYOUT_RISING_ROCK",
+  "music": "MUS_CABLE_CAR",
+  "region_map_section": "MAPSEC_BATTLE_FRONTIER",
+  "requires_flash": false,
+  "weather": "WEATHER_DYNAMIC",
+  "map_type": "MAP_TYPE_ROUTE",
+  "allow_cycling": false,
+  "allow_escaping": false,
+  "allow_running": false,
+  "show_map_name": true,
+  "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
+  "connections": [
+    {
+      "map": "MAP_ALLSTAR_VILLAGE",
+      "offset": -19,
+      "direction": "down"
+    }
+  ],
+  "object_events": [],
+  "warp_events": [
+    {
+      "x": 23,
+      "y": 9,
+      "elevation": 0,
+      "dest_map": "MAP_RISING_ROCK",
+      "dest_warp_id": "0"
+    },
+    {
+      "x": 22,
+      "y": 9,
+      "elevation": 0,
+      "dest_map": "MAP_RISING_ROCK",
+      "dest_warp_id": "0"
+    }
+  ],
+  "coord_events": [],
+  "bg_events": []
+}

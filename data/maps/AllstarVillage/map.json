@@ -1,0 +1,31 @@
+{
+  "id": "MAP_ALLSTAR_VILLAGE",
+  "name": "AllstarVillage",
+  "layout": "LAYOUT_ALLSTAR_VILLAGE",
+  "music": "MUS_FALLARBOR",
+  "region_map_section": "MAPSEC_BATTLE_FRONTIER",
+  "requires_flash": false,
+  "weather": "WEATHER_DYNAMIC",
+  "map_type": "MAP_TYPE_TOWN",
+  "allow_cycling": false,
+  "allow_escaping": false,
+  "allow_running": false,
+  "show_map_name": true,
+  "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
+  "connections": [
+    {
+      "map": "MAP_BATTLE_FRONTIER_OUTSIDE_WEST",
+      "offset": 20,
+      "direction": "right"
+    },
+    {
+      "map": "MAP_RISING_ROCK",
+      "offset": 19,
+      "direction": "up"
+    }
+  ],
+  "object_events": [],
+  "warp_events": [],
+  "coord_events": [],
+  "bg_events": []
+}
