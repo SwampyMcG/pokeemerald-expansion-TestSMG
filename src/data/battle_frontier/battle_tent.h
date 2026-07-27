@@ -1473,8 +1473,146 @@ const struct TrainerMon gSlateportBattleTentMons[NUM_SLATEPORT_TENT_MONS] =
         .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
         .nature = NATURE_MODEST,
         .ball = BALL_POKE
-    }
+    },
+    [SLATEPORT_TENT_MON_VULPIX_ALOLA] = {
+        .species = SPECIES_VULPIX_ALOLA,
+        .moves = {MOVE_ICY_WIND, MOVE_QUICK_ATTACK, MOVE_SMOKESCREEN, MOVE_FLAME_CHARGE},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_SANDSHREW_ALOLA] = {
+        .species = SPECIES_SANDSHREW_ALOLA,
+        .moves = {MOVE_SLASH, MOVE_SAND_ATTACK, MOVE_SAND_TOMB, MOVE_DEFENSE_CURL},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_CROAGUNK] = {
+        .species = SPECIES_CROAGUNK,
+        .moves = {MOVE_POISON_GAS, MOVE_TACKLE, MOVE_ASTONISH, MOVE_MUD_SLAP},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_SALANDIT] = {
+        .species = SPECIES_SALANDIT,
+        .moves = {MOVE_EMBER, MOVE_SMOKESCREEN, MOVE_QUICK_ATTACK, MOVE_FLAME_CHARGE},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_ROOKIDEE] = {
+        .species = SPECIES_ROOKIDEE,
+        .moves = {MOVE_PECK, MOVE_QUICK_ATTACK, MOVE_GROWL, MOVE_AERIAL_ACE},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_YAMPER] = {
+        .species = SPECIES_YAMPER,
+        .moves = {MOVE_SPARK, MOVE_QUICK_ATTACK, MOVE_GROWL, MOVE_THUNDER_WAVE},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_ROLYCOLY] = {
+        .species = SPECIES_ROLYCOLY,
+        .moves = {MOVE_ROCK_THROW, MOVE_DEFENSE_CURL, MOVE_ROLLOUT, MOVE_SMACK_DOWN},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_CUFANT] = {
+        .species = SPECIES_CUFANT,
+        .moves = {MOVE_TACKLE, MOVE_IRON_DEFENSE, MOVE_METAL_SOUND, MOVE_STOMP},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_DURALUDON] = {
+        .species = SPECIES_DURALUDON,
+        .moves = {MOVE_METAL_CLAW, MOVE_DRAGON_BREATH, MOVE_IRON_DEFENSE, MOVE_DRAGON_CLAW},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_SIZZLIPEDE] = {
+        .species = SPECIES_SIZZLIPEDE,
+        .moves = {MOVE_EMBER, MOVE_SMOKESCREEN, MOVE_QUICK_ATTACK, MOVE_FLAME_CHARGE},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_AXEW] = {
+        .species = SPECIES_AXEW,
+        .moves = {MOVE_DRAGON_RAGE, MOVE_TAUNT, MOVE_SCARY_FACE, MOVE_DRAGON_BREATH},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_CUBCHOO] = {
+        .species = SPECIES_CUBCHOO,
+        .moves = {MOVE_ICY_WIND, MOVE_QUICK_ATTACK, MOVE_GROWL, MOVE_BITE},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_SANDILE] = {
+        .species = SPECIES_SANDILE,
+        .moves = {MOVE_SAND_ATTACK, MOVE_BITE, MOVE_SCARY_FACE, MOVE_DIG},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_SCRAGGY] = {
+        .species = SPECIES_SCRAGGY,
+        .moves = {MOVE_LOW_KICK, MOVE_HEADBUTT, MOVE_SCARY_FACE, MOVE_FAKE_OUT},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 252, 252, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_SANDYGAST] = {
+        .species = SPECIES_SANDYGAST,
+        .moves = {MOVE_SAND_ATTACK, MOVE_ASTONISH, MOVE_BULLDOZE, MOVE_SHADOW_BALL},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_GRIMER_ALOLA] = {
+        .species = SPECIES_GRIMER_ALOLA,
+        .moves = {MOVE_POISON_GAS, MOVE_ASTONISH, MOVE_SLUDGE, MOVE_MUD_SLAP},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [SLATEPORT_TENT_MON_APPLIN] = {
+        .species = SPECIES_APPLIN,
+        .moves = {MOVE_TACKLE, MOVE_ACID, MOVE_ROLLOUT, MOVE_GROWL},
+        .heldItem = ITEM_NONE,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+
 };
+
 
 // Verdanturf Battle Tent.
 const u16 gVerdanturfBattleTentTrainerMons_Brenna[] =
