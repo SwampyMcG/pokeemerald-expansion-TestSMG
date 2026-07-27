@@ -1,0 +1,211 @@
+// Gen 4-9 competitive final-evolution pool
+[
+    [FRONTIER_MON_GRIMER] = {
+        .species = SPECIES_GARCHOMP,
+        .moves = {MOVE_DRAGON_CLAW, MOVE_EARTHQUAKE, MOVE_STONE_EDGE, MOVE_FIRE_BLAST},
+        .heldItem = ITEM_CHOICE_BAND,
+        .ev = TRAINER_PARTY_EVS(0, 252, 0, 0, 0, 252),
+        .nature = NATURE_JOLLY,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_KRABBY] = {
+        .species = SPECIES_LUCARIO,
+        .moves = {MOVE_AURA_SPHERE, MOVE_CLOSE_COMBAT, MOVE_ICE_PUNCH, MOVE_BULLET_PUNCH},
+        .heldItem = ITEM_FOCUS_SASH,
+        .ev = TRAINER_PARTY_EVS(0, 252, 0, 0, 0, 252),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_EXEGGCUTE] = {
+        .species = SPECIES_TOGEKISS,
+        .moves = {MOVE_AIR_SLASH, MOVE_DAZZLING_GLEAM, MOVE_ROOST, MOVE_FOLLOW_ME},
+        .heldItem = ITEM_LEFTOVERS,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 0, 252),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_EEVEE] = {
+        .species = SPECIES_HEATRAN,
+        .moves = {MOVE_FIRE_BLAST, MOVE_STEAM_ERUPTION, MOVE_OVERHEAT, MOVE_ROAR},
+        .heldItem = ITEM_LEFTOVERS,
+        .ev = TRAINER_PARTY_EVS(0, 0, 252, 0, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_DROWZEE] = {
+        .species = SPECIES_WEAVILE,
+        .moves = {MOVE_NIGHT_SLASH, MOVE_ICE_SHARD, MOVE_PUNISHMENT, MOVE_KNOCK_OFF},
+        .heldItem = ITEM_CHOICE_SCARF,
+        .ev = TRAINER_PARTY_EVS(0, 252, 0, 0, 0, 252),
+        .nature = NATURE_JOLLY,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_VOLTORB] = {
+        .species = SPECIES_HYDREIGON,
+        .moves = {MOVE_DRAGON_TAIL, MOVE_FLAMETHROWER, MOVE_DARK_PULSE, MOVE_DRAGON_PULSE},
+        .heldItem = ITEM_ASSAULT_VEST,
+        .ev = TRAINER_PARTY_EVS(0, 252, 0, 0, 0, 252),
+        .nature = NATURE_TIMID,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_CHINCHOU] = {
+        .species = SPECIES_VOLCARONA,
+        .moves = {MOVE_QUIVER_DANCE, MOVE_FIRE_BLAST, MOVE_BUG_BUZZ, MOVE_GIGA_DRAIN},
+        .heldItem = ITEM_LIFE_ORB,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 0, 252),
+        .nature = NATURE_TIMID,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_TEDDIURSA] = {
+        .species = SPECIES_FERROTHORN,
+        .moves = {MOVE_SPIKES, MOVE_POWER_WHIP, MOVE_BULLET_SEED, MOVE_PROTECT},
+        .heldItem = ITEM_LEFTOVERS,
+        .ev = TRAINER_PARTY_EVS(252, 0, 252, 0, 0, 0),
+        .nature = NATURE_BOLD,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_DELIBIRD] = {
+        .species = SPECIES_SCRAFTY,
+        .moves = {MOVE_DRAIN_PUNCH, MOVE_FACADE, MOVE_ICE_PUNCH, MOVE_KNOCK_OFF},
+        .heldItem = ITEM_LEFTOVERS,
+        .ev = TRAINER_PARTY_EVS(252, 0, 0, 0, 0, 252),
+        .nature = NATURE_CAREFUL,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_HOUNDOUR] = {
+        .species = SPECIES_GRENINJA,
+        .moves = {MOVE_WATER_SHURIKEN, MOVE_NIGHT_SLASH, MOVE_TAUNT, MOVE_TORCH_SONG},
+        .heldItem = ITEM_LIFE_ORB,
+        .ev = TRAINER_PARTY_EVS(0, 252, 0, 0, 0, 252),
+        .nature = NATURE_TIMID,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_PHANPY] = {
+        .species = SPECIES_TALONFLAME,
+        .moves = {MOVE_BRAVE_BIRD, MOVE_FLARE_BLITZ, MOVE_TAILWIND, MOVE_WILL_O_WISP},
+        .heldItem = ITEM_CHOICE_SCARF,
+        .ev = TRAINER_PARTY_EVS(0, 252, 0, 0, 0, 252),
+        .nature = NATURE_JOLLY,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_SPOINK] = {
+        .species = SPECIES_AEGISLASH,
+        .moves = {MOVE_KINGS_SHIELD, MOVE_SHADOW_BALL, MOVE_IRON_HEAD, MOVE_WILL_O_WISP},
+        .heldItem = ITEM_LEFTOVERS,
+        .ev = TRAINER_PARTY_EVS(252, 0, 0, 0, 252, 0),
+        .nature = NATURE_CAREFUL,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_ARON] = {
+        .species = SPECIES_KARTANA,
+        .moves = {MOVE_SACRED_SWORD, MOVE_LEAF_BLADE, MOVE_PSYCHIC_FANGS, MOVE_GIGA_IMPACT},
+        .heldItem = ITEM_LIFE_ORB,
+        .ev = TRAINER_PARTY_EVS(0, 252, 0, 0, 0, 252),
+        .nature = NATURE_SHARP,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_LUVDISC] = {
+        .species = SPECIES_CORVIKNIGHT,
+        .moves = {MOVE_BRAVE_BIRD, MOVE_IRON_HEAD, MOVE_ROOST, MOVE_UTURN},
+        .heldItem = ITEM_LEFTOVERS,
+        .ev = TRAINER_PARTY_EVS(252, 0, 0, 0, 0, 252),
+        .nature = NATURE_BOLD,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_TENTACOOL] = {
+        .species = SPECIES_DRAGAPULT,
+        .moves = {MOVE_DRAGON_DARTS, MOVE_SHADOW_BALL, MOVE_FLAMETHROWER, MOVE_HYPNOSIS},
+        .heldItem = ITEM_CHOICE_SCARF,
+        .ev = TRAINER_PARTY_EVS(0, 252, 0, 0, 0, 252),
+        .nature = NATURE_TIMID,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_CACNEA] = {
+        .species = SPECIES_MELMETAL,
+        .moves = {MOVE_DOUBLE_IRON_BASH, MOVE_THUNDER_PUNCH, MOVE_ROCK_SLIDE, MOVE_PROTECT},
+        .heldItem = ITEM_LEFTOVERS,
+        .ev = TRAINER_PARTY_EVS(252, 0, 252, 0, 0, 0),
+        .nature = NATURE_BOLD,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_UNOWN] = {
+        .species = SPECIES_GRIMMSNARL,
+        .moves = {MOVE_SPIRIT_BREAK, MOVE_FOCUS_BLAST, MOVE_PLAY_ROUGH, MOVE_REFLECT},
+        .heldItem = ITEM_LEFTOVERS,
+        .ev = TRAINER_PARTY_EVS(252, 0, 0, 0, 252, 0),
+        .nature = NATURE_CAREFUL,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_KOFFING] = {
+        .species = SPECIES_MEOWSCARADA,
+        .moves = {MOVE_U_TURN, MOVE_DARK_PULSE, MOVE_PLAY_ROUGH, MOVE_GRASS_KNOT},
+        .heldItem = ITEM_LIFE_ORB,
+        .ev = TRAINER_PARTY_EVS(0, 252, 0, 0, 0, 252),
+        .nature = NATURE_JOLLY,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_STARYU] = {
+        .species = SPECIES_SKELEDIRGE,
+        .moves = {MOVE_FLAMETHROWER, MOVE_STONE_EDGE, MOVE_BITE, MOVE_WITHDRAW},
+        .heldItem = ITEM_LEFTOVERS,
+        .ev = TRAINER_PARTY_EVS(252, 0, 0, 0, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_SKIPLOOM] = {
+        .species = SPECIES_QUAQUAVAL,
+        .moves = {MOVE_SURF, MOVE_AQUA_STEP, MOVE_ICE_BEAM, MOVE_CLOSE_COMBAT},
+        .heldItem = ITEM_LIFE_ORB,
+        .ev = TRAINER_PARTY_EVS(0, 252, 0, 0, 0, 252),
+        .nature = NATURE_JOLLY,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_NUZLEAF] = {
+        .species = SPECIES_KINGAMBIT,
+        .moves = {MOVE_SWORDS_DANCE, MOVE_KOWTOW_CLEAVE, MOVE_IRON_HEAD, MOVE_SUPERPOWER},
+        .heldItem = ITEM_LEFTOVERS,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_LOMBRE] = {
+        .species = SPECIES_OGERPON,
+        .moves = {MOVE_JUDGMENT, MOVE_HORN_LEECH, MOVE_SPORE, MOVE_GIGA_IMPACT},
+        .heldItem = ITEM_LEFTOVERS,
+        .ev = TRAINER_PARTY_EVS(252, 0, 252, 0, 0, 0),
+        .nature = NATURE_BOLD,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_VIBRAVA] = {
+        .species = SPECIES_MAMOSWINE,
+        .moves = {MOVE_ICE_SHARD, MOVE_EARTHQUAKE, MOVE_SUPERPOWER, MOVE_ROCK_SLIDE},
+        .heldItem = ITEM_CHOICE_BAND,
+        .ev = TRAINER_PARTY_EVS(0, 252, 0, 0, 0, 252),
+        .nature = NATURE_NAIVE,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_RHYHORN] = {
+        .species = SPECIES_RHYPERIOR,
+        .moves = {MOVE_STONE_EDGE, MOVE_EARTHQUAKE, MOVE_ROCK_BLAST, MOVE_SLUDGE_BOMB},
+        .heldItem = ITEM_LEFTOVERS,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_CLAMPERL] = {
+        .species = SPECIES_ELECTIVIRE,
+        .moves = {MOVE_THUNDER_BOLT, MOVE_WILD_CHARGE, MOVE_CROSS_CHOP, MOVE_VOLT_SWITCH},
+        .heldItem = ITEM_CHOICE_SCARF,
+        .ev = TRAINER_PARTY_EVS(0, 252, 0, 0, 0, 252),
+        .nature = NATURE_NAIVE,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_PIDGEOTTO] = {
+        .species = SPECIES_ROSERADE,
+        .moves = {MOVE_GRASS_KNOT, MOVE_PSYCHIC, MOVE_MYSTICAL_FIRE, MOVE_SLUDGE_BOMB},
+        .heldItem = ITEM_LEFTOVERS,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_TIMID,
+        .ball = BALL_POKE
+    }
+];
