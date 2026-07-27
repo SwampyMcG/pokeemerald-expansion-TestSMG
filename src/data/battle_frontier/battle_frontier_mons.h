@@ -7055,5 +7055,133 @@ const struct TrainerMon gBattleFrontierMons[NUM_FRONTIER_MONS] =
         .ev = TRAINER_PARTY_EVS(170, 0, 170, 0, 0, 170),
         .nature = NATURE_MODEST,
         .ball = BALL_POKE
-    }
+    },
+    [FRONTIER_MON_TORTERRA_1] = {
+        .species = SPECIES_TORTERRA,
+        .moves = {MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_DRAGON_CLAW, MOVE_SYNTHESIS},
+        .heldItem = ITEM_QUICK_CLAW,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+},
+    [FRONTIER_MON_INFERNAPE_1] = {
+        .species = SPECIES_INFERNAPE,
+        .moves = {MOVE_FIRE_BLAST, MOVE_MACH_PUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE},
+        .heldItem = ITEM_QUICK_CLAW,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+},
+    [FRONTIER_MON_EMPOLEON_1] = {
+        .species = SPECIES_EMPOLEON,
+        .moves = {MOVE_HYDRO_PUMP, MOVE_ICE_BEAM, MOVE_CALM_MIND, MOVE_REST},
+        .heldItem = ITEM_CHESTO_BERRY,
+        .ev = TRAINER_PARTY_EVS(170, 0, 170, 0, 0, 170),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_RAMPARDOS_1] = {
+        .species = SPECIES_RAMPARDOS,
+        .moves = {MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_DRAGON_CLAW, MOVE_SYNTHESIS},
+        .heldItem = ITEM_QUICK_CLAW,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_BASTIODON_1] = {
+        .species = SPECIES_BASTIODON,
+        .moves = {MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_DRAGON_CLAW, MOVE_SYNTHESIS},
+        .heldItem = ITEM_QUICK_CLAW,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_GARCHOMP_1] = {
+        .species = SPECIES_GARCHOMP,
+        .moves = {MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_DRAGON_CLAW, MOVE_SYNTHESIS},
+        .heldItem = ITEM_GARCHOMPITE,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_LUCARIO_1] = {
+        .species = SPECIES_LUCARIO,
+        .moves = {MOVE_BULLET_PUNCH, MOVE_FOCUS_PUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE},
+        .heldItem = ITEM_LUCARIONITE,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_DRAPION_1] = {
+        .species = SPECIES_DRAPION,
+        .moves = {MOVE_CROSS_POISON, MOVE_NIGHT_SLASH, MOVE_KNOCK_OFF, MOVE_TOXIC_SPIKES},
+        .heldItem = ITEM_QUICK_CLAW,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_TOXICROAK_1] = {
+        .species = SPECIES_TOXICROAK,
+        .moves = {MOVE_CROSS_POISON, MOVE_NIGHT_SLASH, MOVE_KNOCK_OFF, MOVE_TOXIC_SPIKES},
+        .heldItem = ITEM_QUICK_CLAW,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_ABOMASNOW_1] = {
+        .species = SPECIES_ABOMASNOW,
+        .moves = {MOVE_BLIZZARD, MOVE_GIGA_DRAIN, MOVE_LEECH_SEED, MOVE_SYNTHESIS},
+        .heldItem = ITEM_ABOMASITE,
+        .ev = TRAINER_PARTY_EVS(252, 0, 0, 252, 0, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_WEAVILE_1] = {
+        .species = SPECIES_WEAVILE,
+        .moves = {MOVE_ICE_PUNCH, MOVE_NIGHT_SLASH, MOVE_KNOCK_OFF, MOVE_TOXIC_SPIKES},
+        .heldItem = ITEM_QUICK_CLAW,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_MAGNEZONE_1] = {
+        .species = SPECIES_MAGNEZONE,
+        .moves = {MOVE_THUNDERBOLT, MOVE_FLASH_CANNON, MOVE_THUNDER_WAVE, MOVE_SUBSTITUTE},
+        .heldItem = ITEM_QUICK_CLAW,
+        .ev = TRAINER_PARTY_EVS(252, 0, 0, 252, 0, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_HONCHKROW_1] = {
+        .species = SPECIES_HONCHKROW,
+        .moves = {MOVE_NIGHT_SLASH, MOVE_BRAVE_BIRD, MOVE_KNOCK_OFF, MOVE_TOXIC_SPIKES},
+        .heldItem = ITEM_QUICK_CLAW,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_GALLADE_1] = {
+        .species = SPECIES_GALLADE,
+        .moves = {MOVE_PSYCHO_CUT, MOVE_CLOSE_COMBAT, MOVE_KNOCK_OFF, MOVE_TOXIC_SPIKES},
+        .heldItem = ITEM_GALLADITE,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_FROSLASS_1] = {
+        .species = SPECIES_FROSLASS,
+        .moves = {MOVE_ICE_BEAM, MOVE_SHADOW_BALL, MOVE_THUNDER_WAVE, MOVE_DESTINY_BOND},
+        .heldItem = ITEM_QUICK_CLAW,
+        .ev = TRAINER_PARTY_EVS(0, 0, 0, 252, 252, 0),
+        .nature = NATURE_MODEST,
+        .ball = BALL_POKE
+    },
+    [FRONTIER_MON_LUCARIO_2] = {
+        .species = SPECIES_LUCARIO,
+        .moves = {MOVE_BULLET_PUNCH, MOVE_FOCUS_PUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE},
+        .heldItem = ITEM_LUCARIONITE_Z,
+        .ev = TRAINER_PARTY_EVS(252, 252, 0, 0, 0, 0),
+        .nature = NATURE_ADAMANT,
+        .ball = BALL_POKE
+    },
 };
