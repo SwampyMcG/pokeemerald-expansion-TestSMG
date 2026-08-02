@@ -1141,6 +1141,18 @@ static const struct MenuAction sMultichoiceList_HOF_Eggs_Victories_Quit[] = {
     {gText_ShopQuit}
 };
 
+static const struct MenuAction sMultichoiceList_EXPEDITION1[] =
+{
+    {COMPOUND_STRING("Coastal Plains")},
+    {COMPOUND_STRING("Swampy Marsh")},
+    {COMPOUND_STRING("Littoral Caves")},
+    {COMPOUND_STRING("Tidal Lagoons")},
+    {COMPOUND_STRING("Budding Island")},
+    {COMPOUND_STRING("GLASS CHAIR")},
+    {COMPOUND_STRING("GLASS DESK")},
+    {gText_Cancel2},
+};
+
 static const struct MenuAction MultichoiceList_Exit[] =
 {
     {gText_Exit},
