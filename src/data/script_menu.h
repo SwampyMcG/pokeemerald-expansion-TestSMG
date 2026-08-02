@@ -281,6 +281,25 @@ static const struct MenuAction MultichoiceList_GameCornerTMs[] =
     {gText_Exit},
 };
 
+static const struct MenuAction MultichoiceList_GameCornerNew[] =
+{
+    {COMPOUND_STRING("RARE CANDY")},
+    {COMPOUND_STRING("SUN STONE")},
+    {COMPOUND_STRING("MOON STONE")},
+    {COMPOUND_STRING("CHOICE BAND")},
+    {COMPOUND_STRING("BRIGHT POWDER")},
+    {gText_Exit},
+};
+
+static const struct MenuAction MultichoiceList_GameCornerNew2[] =
+{
+    {COMPOUND_STRING("FIRE STONE")},
+    {COMPOUND_STRING("THUNDER STONE")},
+    {COMPOUND_STRING("WATER STONE")},
+    {COMPOUND_STRING("LEAF STONE")},
+    {gText_Exit},
+};
+
 static const struct MenuAction MultichoiceList_GameCornerCoins[] =
 {
     {COMPOUND_STRING("  50 COINS    ¥1,000")},
@@ -1191,6 +1210,8 @@ static const struct MultichoiceListStruct sMultichoiceLists[] =
     [MULTI_SSTIDAL_BATTLE_FRONTIER]    = MULTICHOICE(MultichoiceList_SSTidalBattleFrontier),
     [MULTI_RIGHTLEFT]                  = MULTICHOICE(MultichoiceList_RightLeft),
     [MULTI_GAME_CORNER_TMS]            = MULTICHOICE(MultichoiceList_GameCornerTMs),
+    [MULTI_GAMECORNER_NEW]             = MULTICHOICE(MultichoiceList_GameCornerNew),
+    [MULTI_GAMECORNER_NEW2]            = MULTICHOICE(MultichoiceList_GameCornerNew2),
     [MULTI_SSTIDAL_SLATEPORT_NO_BF]    = MULTICHOICE(MultichoiceList_SSTidalSlateportNoBF),
     [MULTI_FLOORS]                     = MULTICHOICE(MultichoiceList_Floors),
     [MULTI_SHARDS_R]                   = MULTICHOICE(MultichoiceList_ShardsR),
