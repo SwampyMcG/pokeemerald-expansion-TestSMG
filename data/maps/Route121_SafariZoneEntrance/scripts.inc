@@ -55,8 +55,6 @@ Route121_SafariZoneEntrance_EventScript_EntranceCounterTrigger::
 	end
 
 Route121_SafariZoneEntrance_EventScript_TryEnterSafariZone::
-	checkitem ITEM_POKEBLOCK_CASE
-	goto_if_eq VAR_RESULT, 0, Route121_SafariZoneEntrance_EventScript_NoPokeblockCase
 	call Route121_SafariZoneEntrance_EventScript_CheckHasRoomForPokemon
 	checkmoney 500
 	goto_if_eq VAR_RESULT, 0, Route121_SafariZoneEntrance_EventScript_NotEnoughMoney
@@ -71,14 +69,73 @@ Route121_SafariZoneEntrance_EventScript_TryEnterSafariZone::
 	msgbox Route121_SafariZoneEntrance_Text_PleaseEnjoyYourself, MSGBOX_DEFAULT
 	closemessage
 	hidemoneybox
+	goto Route121_SafariZoneEntrance_EventScript_ChooseSafariWarp
+	end
+
+Route121_SafariZoneEntrance_EventScript_ChooseSafariWarp::
+	msgbox Route121_SafariZoneEntrance_Text_ChooseYourDestination, MSGBOX_DEFAULT
+	multichoice 0, 0, MULTI_EXPEDITION1, FALSE
+	switch VAR_RESULT
+	case 0, Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneSouth
+	case 1, Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneSouthwest
+	case 2, Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneWest
+	case 3, Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneNorthwest
+	case 4, Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneNorth
+	case 5, Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneNortheast
+	case 6, Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneSoutheast
+	case 7, Route121_SafariZoneEntrance_EventScript_MovePlayerBackFromCounter
+	case 127, Route121_SafariZoneEntrance_EventScript_MovePlayerBackFromCounter
+	end
+
+Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneSouth::
+	call Route121_SafariZoneEntrance_EventScript_EnterSafariZone
+	warp MAP_SAFARI_ZONE_SOUTH, 8, 8
+	waitstate
+	end
+
+Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneSouthwest::
+	call Route121_SafariZoneEntrance_EventScript_EnterSafariZone
+	warp MAP_SAFARI_ZONE_SOUTHWEST, 8, 8
+	waitstate
+	end
+
+Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneWest::
+	call Route121_SafariZoneEntrance_EventScript_EnterSafariZone
+	warp MAP_SAFARI_ZONE_WEST, 8, 8
+	waitstate
+	end
+
+Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneNorthwest::
+	call Route121_SafariZoneEntrance_EventScript_EnterSafariZone
+	warp MAP_SAFARI_ZONE_NORTHWEST, 8, 8
+	waitstate
+	end
+
+Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneNorth::
+	call Route121_SafariZoneEntrance_EventScript_EnterSafariZone
+	warp MAP_SAFARI_ZONE_NORTH, 8, 8
+	waitstate
+	end
+
+Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneNortheast::
+	call Route121_SafariZoneEntrance_EventScript_EnterSafariZone
+	warp MAP_SAFARI_ZONE_NORTHEAST, 8, 8
+	waitstate
+	end
+
+Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneSoutheast::
+	call Route121_SafariZoneEntrance_EventScript_EnterSafariZone
+	warp MAP_SAFARI_ZONE_SOUTHEAST, 8, 8
+	waitstate
+	end
+
+Route121_SafariZoneEntrance_EventScript_EnterSafariZone::
 	applymovement LOCALID_PLAYER, Route121_SafariZoneEntrance_Movement_EnterSafariZone
 	waitmovement 0
 	special EnterSafariMode
 	setvar VAR_SAFARI_ZONE_STATE, 2
 	clearflag FLAG_GOOD_LUCK_SAFARI_ZONE
-	warp MAP_SAFARI_ZONE_SOUTH, 32, 33
-	waitstate
-	end
+	return
 
 Route121_SafariZoneEntrance_EventScript_CheckHasRoomForPokemon::
 	getpartysize
@@ -91,11 +148,6 @@ Route121_SafariZoneEntrance_EventScript_CheckHasRoomForPokemon::
 
 Route121_SafariZoneEntrance_EventScript_HasRoomForPokemon::
 	return
-
-Route121_SafariZoneEntrance_EventScript_NoPokeblockCase::
-	msgbox Route121_SafariZoneEntrance_Text_YouNeedPokeblockCase, MSGBOX_DEFAULT
-	goto Route121_SafariZoneEntrance_EventScript_MovePlayerBackFromCounter
-	end
 
 Route121_SafariZoneEntrance_EventScript_NotEnoughMoney::
 	msgbox Route121_SafariZoneEntrance_Text_NotEnoughMoney, MSGBOX_DEFAULT

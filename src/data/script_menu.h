@@ -1148,8 +1148,8 @@ static const struct MenuAction sMultichoiceList_EXPEDITION1[] =
     {COMPOUND_STRING("Littoral Caves")},
     {COMPOUND_STRING("Tidal Lagoons")},
     {COMPOUND_STRING("Budding Island")},
-    {COMPOUND_STRING("GLASS CHAIR")},
-    {COMPOUND_STRING("GLASS DESK")},
+    {COMPOUND_STRING("Spooky place?")},
+    {COMPOUND_STRING("Icy Place")},
     {gText_Cancel2},
 };
 
@@ -1327,6 +1327,7 @@ static const struct MultichoiceListStruct sMultichoiceLists[] =
     [MULTI_HOF_VICTORIES_QUIT]                         = MULTICHOICE(sMultichoiceList_HOF_Victories_Quit),
     [MULTI_EGGS_VICTORIES_QUIT]                        = MULTICHOICE(sMultichoiceList_Eggs_Victories_Quit),
     [MULTI_HOF_EGGS_VICTORIES_QUIT]                    = MULTICHOICE(sMultichoiceList_HOF_Eggs_Victories_Quit),
+    [MULTI_EXPEDITION1]                                = MULTICHOICE(sMultichoiceList_EXPEDITION1)
 };
 
 const u8 *const gStdStrings[] =

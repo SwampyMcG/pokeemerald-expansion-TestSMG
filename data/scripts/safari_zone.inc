@@ -167,6 +167,9 @@ Route121_SafariZoneEntrance_Text_PleaseEnjoyYourself:
 	.string "So, until then, enjoy yourself, please!\n"
 	.string "Off you go on your wild excursion!$"
 
+Route121_SafariZoneEntrance_Text_ChooseYourDestination:
+	.string "Please choose your destination.$"
+
 Route121_SafariZoneEntrance_Text_PCIsFull:
 	.string "Excuse me!\n"
 	.string "Your PC BOX is full.$"
