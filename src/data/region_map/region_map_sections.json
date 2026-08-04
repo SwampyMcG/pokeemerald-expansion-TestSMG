@@ -466,7 +466,7 @@
     },
     {
       "id": "MAPSEC_BATTLE_FRONTIER",
-      "name": "CHAMPION'S VILLAGE",
+      "name": "Legacy Lagoon",
       "x": 22,
       "y": 12,
       "width": 1,
@@ -1553,7 +1553,7 @@
     },
     {
       "id": "MAPSEC_FARAWAY_ISLAND",
-      "name": "FARAWAY ISLAND"
+      "name": "Coastal Meadow"
     },
     {
       "id": "MAPSEC_ARTISAN_CAVE",

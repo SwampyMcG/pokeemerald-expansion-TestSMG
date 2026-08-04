@@ -1165,6 +1165,8 @@
   "gMapGroup_AA_Locations": [
     "AllstarVillage",
     "RisingRock",
-    "RisingMeadow"
+    "RisingMeadow",
+    "CoastalMeadow",
+    "LegacyLagoon"
   ]
 }

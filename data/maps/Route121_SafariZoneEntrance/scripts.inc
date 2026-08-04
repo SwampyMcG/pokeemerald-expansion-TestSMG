@@ -89,13 +89,13 @@ Route121_SafariZoneEntrance_EventScript_ChooseSafariWarp::
 
 Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneSouth::
 	call Route121_SafariZoneEntrance_EventScript_EnterSafariZone
-	warp MAP_SAFARI_ZONE_SOUTH, 8, 8
+	warp MAP_COASTAL_MEADOW, 20, 50
 	waitstate
 	end
 
 Route121_SafariZoneEntrance_EventScript_WarpToSafariZoneSouthwest::
 	call Route121_SafariZoneEntrance_EventScript_EnterSafariZone
-	warp MAP_SAFARI_ZONE_SOUTHWEST, 8, 8
+	warp MAP_SAFARI_ZONE_SOUTH, 32, 35
 	waitstate
 	end
 

@@ -1,8 +1,8 @@
 {
-  "id": "MAP_RISING_MEADOW",
-  "name": "RisingMeadow",
-  "layout": "LAYOUT_RISING_MEADOW",
-  "music": "MUS_CABLE_CAR",
+  "id": "MAP_LEGACY_LAGOON",
+  "name": "LegacyLagoon",
+  "layout": "LAYOUT_LEGACY_LAGOON",
+  "music": "MUS_DUMMY",
   "region_map_section": "MAPSEC_BATTLE_FRONTIER",
   "requires_flash": false,
   "weather": "WEATHER_DYNAMIC",
@@ -15,13 +15,13 @@
   "connections": [
     {
       "map": "MAP_ALLSTAR_VILLAGE",
-      "offset": 36,
+      "offset": -24,
       "direction": "up"
     },
     {
-      "map": "MAP_LEGACY_LAGOON",
+      "map": "MAP_RISING_MEADOW",
       "offset": 0,
-      "direction": "right"
+      "direction": "left"
     }
   ],
   "object_events": [],

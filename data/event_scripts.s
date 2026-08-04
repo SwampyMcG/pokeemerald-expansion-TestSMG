@@ -1744,3 +1744,7 @@ EventScript_PalletTown_PlayersHouse_2F_TurnOnPC::
 	.include "data/maps/RisingMeadow/scripts.inc"
 
 	.include "data/maps/RisingRock/scripts.inc"
+
+	.include "data/maps/CoastalMeadow/scripts.inc"
+
+	.include "data/maps/LegacyLagoon/scripts.inc"

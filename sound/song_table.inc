@@ -627,6 +627,17 @@ gSongTable::
 	song ph_nurse_blend, MUSIC_PLAYER_SE2, 2
 	song ph_nurse_held, MUSIC_PLAYER_SE2, 2
 	song ph_nurse_solo, MUSIC_PLAYER_SE2, 2
+	song mus_the_final_countdown_europe, MUSIC_PLAYER_BGM, 0
+	song mus_wonderwall_oasis_full, MUSIC_PLAYER_BGM, 0
+	song mus_oliver_tree_life_goes_on, MUSIC_PLAYER_BGM, 0
+	song mus_oliver_tree_f_k_the_whole_world, MUSIC_PLAYER_BGM, 0
+	song mus_cowboys_dont_cry_by_oliver_tree, MUSIC_PLAYER_BGM, 0
+	song mus_kavinsky_nightcall, MUSIC_PLAYER_BGM, 0
+	song mus_lagwagon_violins_2_www_midisfree_com, MUSIC_PLAYER_BGM, 0
+	song mus_alkaline_trio_mercy_me_midifind_com, MUSIC_PLAYER_BGM, 0
+	song mus_alkaline_trio_time_to_waste_midifind_com, MUSIC_PLAYER_BGM, 0
+	song mus_alkaline_trio_radio_2_midifind_com, MUSIC_PLAYER_BGM, 0
+	song mus_acdc_highway_to_hell_midifind_com, MUSIC_PLAYER_BGM, 0
 
 	.align 2
 dummy_song_header:

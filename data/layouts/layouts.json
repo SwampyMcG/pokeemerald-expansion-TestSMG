@@ -9327,8 +9327,8 @@
     {
       "id": "LAYOUT_ALLSTAR_VILLAGE",
       "name": "AllstarVillage_Layout",
-      "width": 80,
-      "height": 80,
+      "width": 96,
+      "height": 60,
       "primary_tileset": "gTileset_General",
       "secondary_tileset": "gTileset_Lilycove",
       "border_filepath": "data/layouts/AllstarVillage/border.bin",
@@ -9337,22 +9337,42 @@
     {
       "id": "LAYOUT_RISING_ROCK",
       "name": "RisingRock_Layout",
-      "width": 50,
-      "height": 29,
+      "width": 48,
+      "height": 28,
       "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_Rustboro",
+      "secondary_tileset": "gTileset_BattleFrontierOutsideEast",
       "border_filepath": "data/layouts/RisingRock/border.bin",
       "blockdata_filepath": "data/layouts/RisingRock/map.bin"
     },
     {
       "id": "LAYOUT_RISING_MEADOW",
       "name": "RisingMeadow_Layout",
+      "width": 60,
+      "height": 80,
+      "primary_tileset": "gTileset_General",
+      "secondary_tileset": "gTileset_BattleFrontierOutsideEast",
+      "border_filepath": "data/layouts/RisingMeadow/border.bin",
+      "blockdata_filepath": "data/layouts/RisingMeadow/map.bin"
+    },
+    {
+      "id": "LAYOUT_COASTAL_MEADOW",
+      "name": "CoastalMeadow_Layout",
       "width": 80,
       "height": 80,
       "primary_tileset": "gTileset_General",
-      "secondary_tileset": "gTileset_Mauville",
-      "border_filepath": "data/layouts/RisingMeadow/border.bin",
-      "blockdata_filepath": "data/layouts/RisingMeadow/map.bin"
+      "secondary_tileset": "gTileset_EverGrande",
+      "border_filepath": "data/layouts/CoastalMeadow/border.bin",
+      "blockdata_filepath": "data/layouts/CoastalMeadow/map.bin"
+    },
+    {
+      "id": "LAYOUT_LEGACY_LAGOON",
+      "name": "LegacyLagoon_Layout",
+      "width": 44,
+      "height": 42,
+      "primary_tileset": "gTileset_General",
+      "secondary_tileset": "gTileset_Rustboro",
+      "border_filepath": "data/layouts/LegacyLagoon/border.bin",
+      "blockdata_filepath": "data/layouts/LegacyLagoon/map.bin"
     }
   ]
 }
