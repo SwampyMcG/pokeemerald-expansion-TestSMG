@@ -646,4 +646,5 @@ gSpecials::
 	def_special SeafoamIslandsB4F_CurrentDumpsPlayerOnLand
 	def_special UpdateTrainerCardPhotoIcons
 	def_special StickerManGetBragFlags
-	def_special CheckAddCoins,	
+	def_special CheckAddCoins
+	def_special ShowStarterSelectScreen,

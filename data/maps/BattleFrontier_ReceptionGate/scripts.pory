@@ -31,7 +31,6 @@ BattleFrontier_ReceptionGate_EventScript_ScottScene::
 	msgbox BattleFrontier_ReceptionGate_Text_WelcomeToBattleFrontier, MSGBOX_DEFAULT
 	msgbox BattleFrontier_ReceptionGate_Text_IssueFrontierPass, MSGBOX_DEFAULT
 	playfanfare MUS_OBTAIN_ITEM
-	factory_generaterentalmons
 	message BattleFrontier_ReceptionGate_Text_ObtainedFrontierPass
 	waitfanfare
 	waitmessage
@@ -47,7 +46,7 @@ BattleFrontier_ReceptionGate_EventScript_ScottScene::
 	setflag FLAG_RECEIVED_COIN_CASE
 	setflag FLAG_SYS_FRONTIER_PASS
 	fadescreen FADE_TO_BLACK
-	factory_rentmons
+	special ShowStarterSelectScreen
 	waitstate
 	msgbox BattleFrontier_ReceptionGate_Text_EnjoyBattleFrontier, MSGBOX_DEFAULT
 	msgbox BattleFrontier_ReceptionGate_Text_IfItIsntPlayerYouCame, MSGBOX_DEFAULT

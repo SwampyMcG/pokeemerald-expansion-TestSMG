@@ -44,6 +44,20 @@
 
 #define SELECTABLE_MONS_COUNT 6
 
+// --- Starter Select Mode additions ---
+#define STARTER_MONS_PER_PAGE   SELECTABLE_MONS_COUNT
+#define STARTER_TOTAL_MONS      48                     // must be a multiple of STARTER_MONS_PER_PAGE
+#define STARTER_PAGE_COUNT      (STARTER_TOTAL_MONS / STARTER_MONS_PER_PAGE)
+#define STARTER_CHOOSE_COUNT    FRONTIER_PARTY_SIZE
+// Matches the exact per-frame speed used by the real Factory swap screen's
+// ball-cycling animation (see Swap_Task_SlideCycleBalls).
+#define STARTER_BALL_SLIDE_SPEED 10
+#define STARTER_BALL_SPACING     35                    // matches (35 * i) + 32 in Select_InitAllSprites
+#define STARTER_PAGE_WIDTH       (STARTER_MONS_PER_PAGE * STARTER_BALL_SPACING) // 210
+#define STARTER_SCROLL_FRAMES    (STARTER_PAGE_WIDTH / STARTER_BALL_SLIDE_SPEED) // 21
+#define STARTER_WRAP_LEFT_X      (-16)
+#define STARTER_WRAP_RIGHT_X     (DISPLAY_WIDTH + 16)
+
 #define PALNUM_FADE_TEXT 14
 #define PALNUM_TEXT      15
 
@@ -83,6 +97,7 @@ enum {
     SELECT_CONTINUE_CHOOSING,
     SELECT_CONFIRM_MONS,
     SELECT_INVALID_MON,
+    SELECT_SCROLL_PAGE, // Next/Prev was chosen from the popup (starter mode only)
 };
 
 struct FactorySelectableMon
@@ -110,6 +125,12 @@ struct FactorySelectScreen
     bool8 fromSummaryScreen;
     u8 yesNoCursorPos;
     u8 unused;
+    bool8 starterMode;                           // TRUE when running the starter picker, not the real Factory
+    u8 currentPage;                              // 0 .. STARTER_PAGE_COUNT-1
+    u8 chosenState[STARTER_TOTAL_MONS];           // 0 = unpicked, 1-3 = pick order, indexed by GLOBAL mon id
+    u8 ballWrapped[STARTER_MONS_PER_PAGE];        // has this slot's ball already swapped to next-page data this scroll?
+    s8 scrollDirection;                          // -1 = prev page, +1 = next page
+    u8 scrollFramesLeft;
     struct FactorySelectableMon mons[SELECTABLE_MONS_COUNT];
     struct FactoryMonPic monPics[FRONTIER_PARTY_SIZE]; // Array so all chosen mons can be shown at once
     bool8 monPicAnimating;
@@ -157,6 +178,91 @@ struct FactorySwapScreen
     struct FactoryMonPic monPic;
     bool8 monPicAnimating;
 };
+
+// --- Starter Select Mode data/prototypes ---
+struct StarterCandidate
+{
+    u16 species;
+    u8  level;
+    u16 moves[MAX_MON_MOVES]; // MOVE_NONE entries are skipped
+};
+
+// DUMMY DATA — placeholder species/moves/level so the table compiles and the
+// screen is fully testable end to end. Replace species/level/moves per-slot
+// with your real picks; keep the count a multiple of STARTER_MONS_PER_PAGE.
+static const struct StarterCandidate sStarterSelectMons[STARTER_TOTAL_MONS] =
+{
+    // --- Page 0 ---
+    [0]  = { SPECIES_BULBASAUR,   50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [1]  = { SPECIES_CHARMANDER,  50, {MOVE_SCRATCH, MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [2]  = { SPECIES_SQUIRTLE,    50, {MOVE_TACKLE,  MOVE_TAIL_WHIP, MOVE_NONE, MOVE_NONE} },
+    [3]  = { SPECIES_CHIKORITA,   50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [4]  = { SPECIES_CYNDAQUIL,   50, {MOVE_TACKLE,  MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
+    [5]  = { SPECIES_TOTODILE,    50, {MOVE_SCRATCH, MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
+
+    // --- Page 1 ---
+    [6]  = { SPECIES_TREECKO,     50, {MOVE_POUND,   MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
+    [7]  = { SPECIES_TORCHIC,     50, {MOVE_SCRATCH, MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [8]  = { SPECIES_MUDKIP,      50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [9]  = { SPECIES_TURTWIG,     50, {MOVE_TACKLE,  MOVE_WITHDRAW,  MOVE_NONE, MOVE_NONE} },
+    [10] = { SPECIES_CHIMCHAR,    50, {MOVE_SCRATCH, MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
+    [11] = { SPECIES_PIPLUP,      50, {MOVE_POUND,   MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+
+    // --- Page 2 ---
+    [12] = { SPECIES_SNIVY,       50, {MOVE_TACKLE,  MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
+    [13] = { SPECIES_TEPIG,       50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [14] = { SPECIES_OSHAWOTT,    50, {MOVE_TACKLE,  MOVE_TAIL_WHIP, MOVE_NONE, MOVE_NONE} },
+    [15] = { SPECIES_CHESPIN,     50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [16] = { SPECIES_FENNEKIN,    50, {MOVE_SCRATCH, MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [17] = { SPECIES_FROAKIE,     50, {MOVE_POUND,   MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+
+    // --- Page 3 ---
+    [18] = { SPECIES_ROWLET,      50, {MOVE_TACKLE,  MOVE_LEAFAGE,   MOVE_NONE, MOVE_NONE} },
+    [19] = { SPECIES_LITTEN,      50, {MOVE_SCRATCH, MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
+    [20] = { SPECIES_POPPLIO,     50, {MOVE_POUND,   MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [21] = { SPECIES_GROOKEY,     50, {MOVE_SCRATCH, MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [22] = { SPECIES_SCORBUNNY,   50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [23] = { SPECIES_SOBBLE,      50, {MOVE_POUND,   MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+
+    // --- Page 4 ---
+    [24] = { SPECIES_PIKACHU,     50, {MOVE_THUNDER_SHOCK, MOVE_GROWL, MOVE_NONE, MOVE_NONE} },
+    [25] = { SPECIES_EEVEE,       50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [26] = { SPECIES_RIOLU,       50, {MOVE_QUICK_ATTACK, MOVE_FORESIGHT, MOVE_NONE, MOVE_NONE} },
+    [27] = { SPECIES_GIBLE,       50, {MOVE_TACKLE,  MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
+    [28] = { SPECIES_DRATINI,     50, {MOVE_WRAP,    MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
+    [29] = { SPECIES_LARVITAR,    50, {MOVE_BITE,    MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
+
+    // --- Page 5 ---
+    [30] = { SPECIES_ABRA,        50, {MOVE_TELEPORT, MOVE_NONE,     MOVE_NONE, MOVE_NONE} },
+    [31] = { SPECIES_MACHOP,      50, {MOVE_LOW_KICK, MOVE_LEER,     MOVE_NONE, MOVE_NONE} },
+    [32] = { SPECIES_GASTLY,      50, {MOVE_LICK,    MOVE_HYPNOSIS,  MOVE_NONE, MOVE_NONE} },
+    [33] = { SPECIES_MAGNEMITE,   50, {MOVE_TACKLE,  MOVE_THUNDER_SHOCK, MOVE_NONE, MOVE_NONE} },
+    [34] = { SPECIES_SCYTHER,     50, {MOVE_QUICK_ATTACK, MOVE_LEER, MOVE_NONE, MOVE_NONE} },
+    [35] = { SPECIES_ONIX,        50, {MOVE_TACKLE,  MOVE_HARDEN,    MOVE_NONE, MOVE_NONE} },
+
+    // --- Page 6 ---
+    [36] = { SPECIES_VULPIX,      50, {MOVE_EMBER,   MOVE_TAIL_WHIP, MOVE_NONE, MOVE_NONE} },
+    [37] = { SPECIES_GROWLITHE,   50, {MOVE_BITE,    MOVE_ROAR,      MOVE_NONE, MOVE_NONE} },
+    [38] = { SPECIES_PONYTA,      50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [39] = { SPECIES_MAREEP,      50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [40] = { SPECIES_SWINUB,      50, {MOVE_POWDER_SNOW, MOVE_TACKLE, MOVE_NONE, MOVE_NONE} },
+    [41] = { SPECIES_HOUNDOUR,    50, {MOVE_LEER,    MOVE_EMBER,     MOVE_NONE, MOVE_NONE} },
+
+    // --- Page 7 ---
+    [42] = { SPECIES_BAGON,       50, {MOVE_RAGE,    MOVE_HEADBUTT,  MOVE_NONE, MOVE_NONE} },
+    [43] = { SPECIES_BELDUM,      50, {MOVE_TACKLE,  MOVE_NONE,      MOVE_NONE, MOVE_NONE} },
+    [44] = { SPECIES_TRAPINCH,    50, {MOVE_BITE,    MOVE_SAND_ATTACK, MOVE_NONE, MOVE_NONE} },
+    [45] = { SPECIES_SPHEAL,      50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    [46] = { SPECIES_SHIELDON,    50, {MOVE_TACKLE,  MOVE_TAUNT,     MOVE_NONE, MOVE_NONE} },
+    [47] = { SPECIES_CRANIDOS,    50, {MOVE_HEADBUTT, MOVE_LEER,     MOVE_NONE, MOVE_NONE} },
+};
+
+static void CreateStarterSelectableMons(u8 page);
+static void Starter_RedrawBallSlot(u8 slot, u16 globalIdx);
+static void Starter_Task_ScrollPage(u8 taskId);
+static void Starter_GiveChosenMons(void);
+static u8 Starter_OptionNextPage(void);
+static u8 Starter_OptionPrevPage(void);
 
 static void SpriteCB_Pokeball(struct Sprite *);
 static void SpriteCB_OpenMonPic(struct Sprite *);
@@ -255,8 +361,20 @@ static EWRAM_DATA u8 *sSwapMonPicBgTilemapBuffer = NULL;
 static struct FactorySelectScreen *sFactorySelectScreen;
 static TaskFunc sSwap_CurrentOptionFunc;
 static struct FactorySwapScreen *sFactorySwapScreen;
+static EWRAM_DATA bool8 sRequestedStarterMode = FALSE;
 
 COMMON_DATA u8 (*gFactorySelect_CurrentOptionFunc)(void) = NULL;
+
+// Public entry point for the starter picker. Call this from a script
+// (e.g. via `special ShowStarterSelectScreen`) instead of whatever
+// currently launches the real Battle Factory rental screen.
+// Add the prototype "void ShowStarterSelectScreen(void);" to
+// battle_factory_screen.h so scripts/other files can see it.
+void ShowStarterSelectScreen(void)
+{
+    sRequestedStarterMode = TRUE;
+    SetMainCallback2(CB2_InitSelectScreen);
+}
 
 static const u16 sPokeballGray_Pal[]         = INCGFX_U16("graphics/battle_frontier/factory_screen/pokeball_gray.pal", ".gbapal");
 static const u16 sPokeballSelected_Pal[]     = INCGFX_U16("graphics/battle_frontier/factory_screen/pokeball_selected.pal", ".gbapal");
@@ -304,6 +422,19 @@ u8 static (*const sSelect_MenuOptionFuncs[])(void) =
     Select_OptionSummary,
     Select_OptionRentDeselect,
     Select_OptionOthers
+};
+
+// Starter mode's popup reuses the same window/cursor/highlight mechanics as
+// the vanilla 3-item menu above, just with 4 items and different labels.
+// "Select"/"Stats" reuse the existing functions (same duplicate-species
+// check, same summary-screen transition) — only their printed text differs,
+// see Select_PrintMenuOptions.
+u8 static (*const sStarter_MenuOptionFuncs[])(void) =
+{
+    Select_OptionRentDeselect, // prints as "Select" / "Deselect"
+    Select_OptionSummary,      // prints as "Stats"
+    Starter_OptionNextPage,
+    Starter_OptionPrevPage,
 };
 
 static const struct BgTemplate sSelect_BgTemplates[] =
@@ -380,7 +511,7 @@ static const struct WindowTemplate sSelect_WindowTemplates[] =
         .tilemapLeft = 22,
         .tilemapTop = 14,
         .width = 8,
-        .height = 6,
+        .height = 8,          // was 6 — grown to fit starter mode's 4th row (Select/Stats/Next/Prev)
         .paletteNum = PALNUM_TEXT,
         .baseBlock = 0x006b,
     },
@@ -391,7 +522,7 @@ static const struct WindowTemplate sSelect_WindowTemplates[] =
         .width = 8,
         .height = 4,
         .paletteNum = PALNUM_TEXT,
-        .baseBlock = 0x009b,
+        .baseBlock = 0x00ab,  // was 0x009b, +0x10 tiles for the taller OPTIONS window above
     },
     [SELECT_WIN_MON_CATEGORY] = {
         .bg = 0,
@@ -400,13 +531,17 @@ static const struct WindowTemplate sSelect_WindowTemplates[] =
         .width = 15,
         .height = 2,
         .paletteNum = PALNUM_TEXT,
-        .baseBlock = 0x00bb,
+        .baseBlock = 0x00cb,  // was 0x00bb, +0x10 tiles for the same reason
     },
     DUMMY_WIN_TEMPLATE,
 };
 
 static const u16 sSelectText_Pal[] = INCGFX_U16("graphics/battle_frontier/factory_screen/text.pal", ".gbapal");
 static const u8 sMenuOptionTextColors[] = {TEXT_COLOR_TRANSPARENT, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_TRANSPARENT};
+static const u8 sText_Select[]   = _("SELECT");
+static const u8 sText_Stats[]    = _("STATS");
+static const u8 sText_NextPage[] = _("NEXT");
+static const u8 sText_PrevPage[] = _("PREV");
 static const u8 sSpeciesNameTextColors[] = {TEXT_COLOR_TRANSPARENT, TEXT_COLOR_RED, TEXT_COLOR_TRANSPARENT};
 
 static const struct OamData sOam_Select_Pokeball =
@@ -1271,10 +1406,15 @@ static void Select_InitMonsData(void)
     sFactorySelectScreen->cursorPos = 0;
     sFactorySelectScreen->selectingMonsState = 1;
     sFactorySelectScreen->fromSummaryScreen = FALSE;
+    sFactorySelectScreen->starterMode = sRequestedStarterMode;
+    sFactorySelectScreen->currentPage = 0;
+    sRequestedStarterMode = FALSE; // consumed
     for (i = 0; i < SELECTABLE_MONS_COUNT; i++)
         sFactorySelectScreen->mons[i].selectedId = 0;
 
-    if (gSaveBlock2Ptr->frontier.lvlMode != FRONTIER_LVL_TENT)
+    if (sFactorySelectScreen->starterMode)
+        CreateStarterSelectableMons(0);
+    else if (gSaveBlock2Ptr->frontier.lvlMode != FRONTIER_LVL_TENT)
         CreateFrontierFactorySelectableMons(0);
     else
         CreateSlateportTentSelectableMons(0);
@@ -1342,9 +1482,13 @@ static void Select_UpdateBallCursorPosition(s8 direction)
 
 static void Select_UpdateMenuCursorPosition(s8 direction)
 {
+    u8 optionCount = sFactorySelectScreen->starterMode
+                    ? ARRAY_COUNT(sStarter_MenuOptionFuncs)
+                    : ARRAY_COUNT(sSelect_MenuOptionFuncs);
+
     if (direction > 0) // Move cursor down.
     {
-        if (sFactorySelectScreen->menuCursorPos != ARRAY_COUNT(sSelect_MenuOptionFuncs) - 1)
+        if (sFactorySelectScreen->menuCursorPos != optionCount - 1)
             sFactorySelectScreen->menuCursorPos++;
         else
             sFactorySelectScreen->menuCursorPos = 0;
@@ -1354,7 +1498,7 @@ static void Select_UpdateMenuCursorPosition(s8 direction)
         if (sFactorySelectScreen->menuCursorPos != 0)
             sFactorySelectScreen->menuCursorPos--;
         else
-            sFactorySelectScreen->menuCursorPos = ARRAY_COUNT(sSelect_MenuOptionFuncs) - 1;
+            sFactorySelectScreen->menuCursorPos = optionCount - 1;
     }
 
     gSprites[sFactorySelectScreen->menuCursor1SpriteId].y = (sFactorySelectScreen->menuCursorPos * 16) + 112;
@@ -1386,6 +1530,10 @@ static void Select_HandleMonSelectionChange(void)
 {
     u8 i, paletteNum;
     u8 cursorPos = sFactorySelectScreen->cursorPos;
+    u8 globalIdx = sFactorySelectScreen->starterMode
+                 ? (sFactorySelectScreen->currentPage * STARTER_MONS_PER_PAGE) + cursorPos
+                 : 0;
+
     if (sFactorySelectScreen->mons[cursorPos].selectedId) // Deselect a mon.
     {
         paletteNum = IndexOfSpritePaletteTag(PALTAG_BALL_GRAY);
@@ -1400,7 +1548,14 @@ static void Select_HandleMonSelectionChange(void)
             if (i == SELECTABLE_MONS_COUNT)
                 return;
             else
+            {
                 sFactorySelectScreen->mons[i].selectedId = 1;
+                if (sFactorySelectScreen->starterMode)
+                {
+                    u8 otherGlobal = (sFactorySelectScreen->currentPage * STARTER_MONS_PER_PAGE) + i;
+                    sFactorySelectScreen->chosenState[otherGlobal] = 1;
+                }
+            }
         }
         sFactorySelectScreen->mons[cursorPos].selectedId = 0;
         sFactorySelectScreen->selectingMonsState--;
@@ -1411,6 +1566,9 @@ static void Select_HandleMonSelectionChange(void)
         sFactorySelectScreen->mons[cursorPos].selectedId = sFactorySelectScreen->selectingMonsState;
         sFactorySelectScreen->selectingMonsState++;
     }
+
+    if (sFactorySelectScreen->starterMode)
+        sFactorySelectScreen->chosenState[globalIdx] = sFactorySelectScreen->mons[cursorPos].selectedId;
 
     gSprites[sFactorySelectScreen->mons[cursorPos].ballSpriteId].oam.paletteNum = paletteNum;
 }
@@ -1480,7 +1638,10 @@ static void Select_Task_Exit(u8 taskId)
     case 1:
         if (!UpdatePaletteFade())
         {
-            Select_CopyMonsToPlayerParty();
+            if (sFactorySelectScreen->starterMode)
+                Starter_GiveChosenMons();
+            else
+                Select_CopyMonsToPlayerParty();
             DestroyTask(sFactorySelectScreen->fadeSpeciesNameTaskId);
             Select_DestroyAllSprites();
             FREE_AND_SET_NULL(sSelectMenuTilesetBuffer);
@@ -1596,6 +1757,13 @@ static void Select_Task_HandleMenu(u8 taskId)
                 gTasks[taskId].tState = STATE_CHOOSE_MONS_INVALID;
                 gTasks[taskId].func = Select_Task_HandleChooseMons;
             }
+            else if (retVal == SELECT_SCROLL_PAGE)
+            {
+                CloseMonPic(sFactorySelectScreen->monPics[1], &sFactorySelectScreen->monPicAnimating, FALSE);
+                Select_ErasePopupMenu(SELECT_WIN_OPTIONS);
+                gTasks[taskId].tState = 0;
+                gTasks[taskId].func = Starter_Task_ScrollPage;
+            }
             else // SELECT_SUMMARY
             {
                 gTasks[taskId].tState = STATE_SUMMARY_FADE;
@@ -1666,6 +1834,14 @@ static void Select_Task_HandleChooseMons(u8 taskId)
         }
         else if (JOY_REPEAT(DPAD_LEFT))
         {
+            if (sFactorySelectScreen->starterMode && sFactorySelectScreen->cursorPos == 0)
+            {
+                PlaySE(SE_SELECT);
+                sFactorySelectScreen->scrollDirection = -1;
+                gTasks[taskId].tState = 0;
+                gTasks[taskId].func = Starter_Task_ScrollPage;
+                break;
+            }
             PlaySE(SE_SELECT);
             Select_UpdateBallCursorPosition(-1);
             Select_PrintMonCategory();
@@ -1673,6 +1849,14 @@ static void Select_Task_HandleChooseMons(u8 taskId)
         }
         else if (JOY_REPEAT(DPAD_RIGHT))
         {
+            if (sFactorySelectScreen->starterMode && sFactorySelectScreen->cursorPos == STARTER_MONS_PER_PAGE - 1)
+            {
+                PlaySE(SE_SELECT);
+                sFactorySelectScreen->scrollDirection = +1;
+                gTasks[taskId].tState = 0;
+                gTasks[taskId].func = Starter_Task_ScrollPage;
+                break;
+            }
             PlaySE(SE_SELECT);
             Select_UpdateBallCursorPosition(1);
             Select_PrintMonCategory();
@@ -1690,6 +1874,184 @@ static void Select_Task_HandleChooseMons(u8 taskId)
         }
         break;
     }
+}
+
+// --- Starter Select Mode: page-turn scroll animation ---
+//
+// Modeled 1:1 on the real Battle Factory swap screen's
+// Swap_Task_SlideCycleBalls: every ball moves at a constant
+// STARTER_BALL_SLIDE_SPEED (10px/frame, same constant as the original),
+// and the instant a ball crosses fully off one edge of the screen it's
+// repositioned to the opposite edge -- at that exact moment its species
+// data and palette are swapped to the next page's data for that slot, so
+// visually "the ball that leaves the screen is what gets redrawn on the
+// other side," same as the original's ball-cycling insert animation.
+//
+// Unlike Swap_Task_SlideCycleBalls (which staggers balls to insert one
+// new mon into an existing row), here all 6 balls move together and each
+// one wraps independently exactly once, since a full page turn is exactly
+// STARTER_PAGE_WIDTH px of travel -- one full lap around the row's own
+// spacing. Each ball ends up back at its original slot x, now showing the
+// next/previous page's mon for that slot.
+static void Starter_Task_ScrollPage(u8 taskId)
+{
+    u8 i;
+    s8 dir = sFactorySelectScreen->scrollDirection; // +1 = next page (balls slide left), -1 = prev page (balls slide right)
+    s16 velocity = -dir * STARTER_BALL_SLIDE_SPEED;
+    u8 targetPage = (sFactorySelectScreen->currentPage + dir + STARTER_PAGE_COUNT) % STARTER_PAGE_COUNT;
+    u8 targetGlobalBase = targetPage * STARTER_MONS_PER_PAGE;
+
+    switch (gTasks[taskId].tState)
+    {
+    case 0:
+        gSprites[sFactorySelectScreen->cursorSpriteId].invisible = TRUE;
+        for (i = 0; i < STARTER_MONS_PER_PAGE; i++)
+            sFactorySelectScreen->ballWrapped[i] = FALSE;
+        sFactorySelectScreen->scrollFramesLeft = STARTER_SCROLL_FRAMES;
+        gTasks[taskId].tState = 1;
+        break;
+
+    case 1:
+        for (i = 0; i < STARTER_MONS_PER_PAGE; i++)
+        {
+            u8 ballSpriteId = sFactorySelectScreen->mons[i].ballSpriteId;
+
+            gSprites[ballSpriteId].x += velocity;
+
+            if (!sFactorySelectScreen->ballWrapped[i])
+            {
+                if (dir > 0 && gSprites[ballSpriteId].x + 16 < 0)
+                {
+                    // Scrolled fully off the left edge -> reappear on the right,
+                    // redrawn as the next page's mon for this slot.
+                    gSprites[ballSpriteId].x = STARTER_WRAP_RIGHT_X;
+                    Starter_RedrawBallSlot(i, targetGlobalBase + i);
+                    sFactorySelectScreen->ballWrapped[i] = TRUE;
+                }
+                else if (dir < 0 && gSprites[ballSpriteId].x - 16 > DISPLAY_WIDTH)
+                {
+                    // Scrolled fully off the right edge -> reappear on the left,
+                    // same idea, mirrored direction.
+                    gSprites[ballSpriteId].x = STARTER_WRAP_LEFT_X;
+                    Starter_RedrawBallSlot(i, targetGlobalBase + i);
+                    sFactorySelectScreen->ballWrapped[i] = TRUE;
+                }
+            }
+        }
+
+        if (--sFactorySelectScreen->scrollFramesLeft == 0)
+            gTasks[taskId].tState = 2;
+        break;
+
+    case 2: // Snap to exact slot positions, finalize page state
+        for (i = 0; i < STARTER_MONS_PER_PAGE; i++)
+        {
+            gSprites[sFactorySelectScreen->mons[i].ballSpriteId].x = (STARTER_BALL_SPACING * i) + 32;
+            if (!sFactorySelectScreen->ballWrapped[i])
+                Starter_RedrawBallSlot(i, targetGlobalBase + i); // safety net if a ball never crossed the threshold
+        }
+
+        sFactorySelectScreen->currentPage = targetPage;
+        sFactorySelectScreen->cursorPos = (dir > 0) ? 0 : (STARTER_MONS_PER_PAGE - 1);
+        gSprites[sFactorySelectScreen->cursorSpriteId].x =
+            gSprites[sFactorySelectScreen->mons[sFactorySelectScreen->cursorPos].ballSpriteId].x;
+        gSprites[sFactorySelectScreen->cursorSpriteId].invisible = FALSE;
+
+        Select_PrintMonSpecies();
+        Select_PrintMonCategory();
+        Select_PrintSelectMonString();
+
+        gTasks[taskId].tState = STATE_CHOOSE_MONS_HANDLE_INPUT;
+        gTasks[taskId].func = Select_Task_HandleChooseMons;
+        break;
+    }
+}
+
+// Rebuilds slot i's monData/palette in place to represent global pool
+// index globalIdx, without touching the sprite's position. Called at the
+// instant a ball wraps around during the scroll, once more as a safety net
+// at the end of the scroll for any ball that never crossed the edge
+// threshold, and also reused by CreateStarterSelectableMons for the
+// initial page load (see below).
+static void Starter_RedrawBallSlot(u8 slot, u16 globalIdx)
+{
+    const struct StarterCandidate *cand = &sStarterSelectMons[globalIdx];
+    struct Pokemon *dest = &sFactorySelectScreen->mons[slot].monData;
+    u8 m, chosen;
+
+    sFactorySelectScreen->mons[slot].monId = globalIdx; // repurposed: global pool index, not facility id
+    CreateMon(dest, cand->species, cand->level, USE_RANDOM_IVS, OTID_STRUCT_PLAYER_ID);
+    for (m = 0; m < MAX_MON_MOVES; m++)
+    {
+        if (cand->moves[m] != MOVE_NONE)
+            SetMonMoveSlot(dest, cand->moves[m], m);
+    }
+
+    chosen = sFactorySelectScreen->chosenState[globalIdx];
+    sFactorySelectScreen->mons[slot].selectedId = chosen;
+    gSprites[sFactorySelectScreen->mons[slot].ballSpriteId].oam.paletteNum =
+        IndexOfSpritePaletteTag(chosen ? PALTAG_BALL_SELECTED : PALTAG_BALL_GRAY);
+}
+
+// Builds monData/selectedId for all 6 slots of the given page. Used for the
+// initial page load (before any sprites exist to scroll).
+static void CreateStarterSelectableMons(u8 page)
+{
+    u8 i;
+    u8 globalBase = page * STARTER_MONS_PER_PAGE;
+
+    for (i = 0; i < STARTER_MONS_PER_PAGE; i++)
+        Starter_RedrawBallSlot(i, globalBase + i);
+}
+
+// Gives the 3 chosen starters directly to the player as real party mons,
+// in the order they were picked. No DoNamingScreen call anywhere -- the
+// nickname simply stays the species name by default. Also sets Pokedex
+// seen/caught flags, matching what receiving a real Pokemon normally does.
+static void Starter_GiveChosenMons(void)
+{
+    u8 i, order;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+        ZeroMonData(&gParties[B_TRAINER_PLAYER][i]);
+
+    for (order = 1; order <= STARTER_CHOOSE_COUNT; order++)
+    {
+        u16 globalIdx;
+        for (globalIdx = 0; globalIdx < STARTER_TOTAL_MONS; globalIdx++)
+        {
+            if (sFactorySelectScreen->chosenState[globalIdx] == order)
+            {
+                const struct StarterCandidate *cand = &sStarterSelectMons[globalIdx];
+                struct Pokemon *dest = &gParties[B_TRAINER_PLAYER][order - 1];
+                u8 m;
+
+                CreateMon(dest, cand->species, cand->level, USE_RANDOM_IVS, OTID_STRUCT_PLAYER_ID);
+                for (m = 0; m < MAX_MON_MOVES; m++)
+                {
+                    if (cand->moves[m] != MOVE_NONE)
+                        SetMonMoveSlot(dest, cand->moves[m], m);
+                }
+
+                GetSetPokedexFlag(SpeciesToNationalPokedexNum(cand->species), FLAG_SET_SEEN);
+                GetSetPokedexFlag(SpeciesToNationalPokedexNum(cand->species), FLAG_SET_CAUGHT);
+                break;
+            }
+        }
+    }
+    CalculatePlayerPartyCount();
+}
+
+static u8 Starter_OptionNextPage(void)
+{
+    sFactorySelectScreen->scrollDirection = +1;
+    return SELECT_SCROLL_PAGE;
+}
+
+static u8 Starter_OptionPrevPage(void)
+{
+    sFactorySelectScreen->scrollDirection = -1;
+    return SELECT_SCROLL_PAGE;
 }
 
 #undef STATE_CHOOSE_MONS_INIT
@@ -1874,13 +2236,25 @@ static void Select_PrintMenuOptions(void)
 
     PutWindowTilemap(SELECT_WIN_OPTIONS);
     FillWindowPixelBuffer(SELECT_WIN_OPTIONS, PIXEL_FILL(0));
-    AddTextPrinterParameterized3(SELECT_WIN_OPTIONS, FONT_NORMAL, 7, 1, sMenuOptionTextColors, 0, gText_Summary);
-    if (selectedId != 0)
-        AddTextPrinterParameterized3(SELECT_WIN_OPTIONS, FONT_NORMAL, 7, 17, sMenuOptionTextColors, 0, gText_Deselect);
-    else
-        AddTextPrinterParameterized3(SELECT_WIN_OPTIONS, FONT_NORMAL, 7, 17, sMenuOptionTextColors, 0, gText_Rent);
 
-    AddTextPrinterParameterized3(SELECT_WIN_OPTIONS, FONT_NORMAL, 7, 33, sMenuOptionTextColors, 0, gText_Others2);
+    if (sFactorySelectScreen->starterMode)
+    {
+        AddTextPrinterParameterized3(SELECT_WIN_OPTIONS, FONT_NORMAL, 7, 1, sMenuOptionTextColors, 0,
+            selectedId ? gText_Deselect : sText_Select);
+        AddTextPrinterParameterized3(SELECT_WIN_OPTIONS, FONT_NORMAL, 7, 17, sMenuOptionTextColors, 0, sText_Stats);
+        AddTextPrinterParameterized3(SELECT_WIN_OPTIONS, FONT_NORMAL, 7, 33, sMenuOptionTextColors, 0, sText_NextPage);
+        AddTextPrinterParameterized3(SELECT_WIN_OPTIONS, FONT_NORMAL, 7, 49, sMenuOptionTextColors, 0, sText_PrevPage);
+    }
+    else
+    {
+        AddTextPrinterParameterized3(SELECT_WIN_OPTIONS, FONT_NORMAL, 7, 1, sMenuOptionTextColors, 0, gText_Summary);
+        if (selectedId != 0)
+            AddTextPrinterParameterized3(SELECT_WIN_OPTIONS, FONT_NORMAL, 7, 17, sMenuOptionTextColors, 0, gText_Deselect);
+        else
+            AddTextPrinterParameterized3(SELECT_WIN_OPTIONS, FONT_NORMAL, 7, 17, sMenuOptionTextColors, 0, gText_Rent);
+        AddTextPrinterParameterized3(SELECT_WIN_OPTIONS, FONT_NORMAL, 7, 33, sMenuOptionTextColors, 0, gText_Others2);
+    }
+
     CopyWindowToVram(SELECT_WIN_OPTIONS, COPYWIN_FULL);
 }
 
@@ -1895,7 +2269,10 @@ static void Select_PrintYesNoOptions(void)
 
 static u8 Select_RunMenuOptionFunc(void)
 {
-    gFactorySelect_CurrentOptionFunc = sSelect_MenuOptionFuncs[sFactorySelectScreen->menuCursorPos];
+    if (sFactorySelectScreen->starterMode)
+        gFactorySelect_CurrentOptionFunc = sStarter_MenuOptionFuncs[sFactorySelectScreen->menuCursorPos];
+    else
+        gFactorySelect_CurrentOptionFunc = sSelect_MenuOptionFuncs[sFactorySelectScreen->menuCursorPos];
     return gFactorySelect_CurrentOptionFunc();
 }
 
