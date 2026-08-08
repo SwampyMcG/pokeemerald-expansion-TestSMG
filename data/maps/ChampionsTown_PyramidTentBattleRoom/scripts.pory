@@ -1,0 +1,268 @@
+raw`
+ChampionsTown_PyramidTentBattleRoom_MapScripts::
+	map_script MAP_SCRIPT_ON_TRANSITION, ChampionsTown_PyramidTentBattleRoom_OnTransition
+	map_script MAP_SCRIPT_ON_FRAME_TABLE, ChampionsTown_PyramidTentBattleRoom_OnFrame
+	map_script MAP_SCRIPT_ON_WARP_INTO_MAP_TABLE, ChampionsTown_PyramidTentBattleRoom_OnWarp
+	.byte 0
+
+@ On this map the player will automatically walk into the room, but the camera is supposed to remain still.
+@ To do this GF sets the player (LOCALID_PLAYER) invisible and creates a fake player object (LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_PLAYER).
+@ The graphics of this fake player object are represented with VAR_OBJ_GFX_ID_1.
+@ The graphics of the opponent are represented with VAR_OBJ_GFX_ID_0, which will ultimately be set by tower_setopponent.
+ChampionsTown_PyramidTentBattleRoom_OnTransition:
+	call ChampionsTown_PyramidTentBattleRoom_EventScript_SetPlayerGfx
+	end
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_SetPlayerGfx::
+	checkplayergender
+	goto_if_eq VAR_RESULT, MALE, ChampionsTown_PyramidTentBattleRoom_EventScript_SetPlayerGfxMale
+	goto_if_eq VAR_RESULT, FEMALE, ChampionsTown_PyramidTentBattleRoom_EventScript_SetPlayerGfxFemale
+	return
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_SetPlayerGfxMale::
+	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_RIVAL_BRENDAN_NORMAL
+	setvar VAR_OBJ_GFX_ID_0, OBJ_EVENT_GFX_RIVAL_BRENDAN_NORMAL
+	return
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_SetPlayerGfxFemale::
+	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_RIVAL_MAY_NORMAL
+	setvar VAR_OBJ_GFX_ID_0, OBJ_EVENT_GFX_RIVAL_MAY_NORMAL
+	return
+
+ChampionsTown_PyramidTentBattleRoom_OnFrame:
+	map_script_2 VAR_TEMP_0, 0, ChampionsTown_PyramidTentBattleRoom_EventScript_EnterRoom
+	.2byte 0
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_EnterRoom::
+	lockall
+	showobjectat LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_PLAYER, MAP_CHAMPIONS_TOWN_PYRAMID_TENT_BATTLE_ROOM
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_PLAYER, ChampionsTown_PyramidTentBattleRoom_Movement_PlayerEnter
+	waitmovement 0
+	frontier_get FRONTIER_DATA_BATTLE_NUM
+	goto_if_ne VAR_RESULT, 0, ChampionsTown_PyramidTentBattleRoom_EventScript_ResumeChallenge
+	msgbox ChampionsTown_PyramidTentBattleRoom_Text_ChamberOpensUp, MSGBOX_DEFAULT
+ChampionsTown_PyramidTentBattleRoom_EventScript_NextOpponentEnter::
+	tower_setopponent
+	addobject LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_OPPONENT
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_OPPONENT, ChampionsTown_PyramidTentBattleRoom_Movement_OpponentEnter
+	waitmovement 0
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_ATTENDANT, ChampionsTown_PyramidTentBattleRoom_Movement_AttendantJump
+	playse SE_M_BELLY_DRUM
+	waitse
+	waitmovement 0
+	battletent_getopponentintro
+	msgbox gStringVar4, MSGBOX_DEFAULT
+	waitmessage
+	call ChampionsTown_PyramidTentBattleRoom_EventScript_DoPyramidBattle
+	switch VAR_RESULT
+	case 1, ChampionsTown_PyramidTentBattleRoom_EventScript_DefeatedOpponent
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_ATTENDANT, ChampionsTown_PyramidTentBattleRoom_Movement_AttendantJump
+	playse SE_M_SNORE
+	waitse
+	waitmovement 0
+	championspyramidtent_getopponentname
+	msgbox ChampionsTown_PyramidTentBattleRoom_Text_WinnerIsOpponent, MSGBOX_DEFAULT
+ChampionsTown_PyramidTentBattleRoom_EventScript_WarpToLobbyLost::
+	frontier_set FRONTIER_DATA_CHALLENGE_STATUS, CHALLENGE_STATUS_LOST
+	special LoadPlayerParty
+	warp MAP_CHAMPIONS_TOWN_PYRAMID_TENT_LOBBY, 6, 6
+	waitstate
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_DoPyramidBattle::
+	closemessage
+	special HealPlayerParty
+	dofacilitytrainerbattle FACILITY_BATTLE_PYRAMID
+	waitstate
+	frontier_restorehelditems
+	special HealPlayerParty
+	return
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_DefeatedOpponent::
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_ATTENDANT, ChampionsTown_PyramidTentBattleRoom_Movement_AttendantJump
+	playse SE_BANG
+	waitse
+	waitmovement 0
+	msgbox ChampionsTown_PyramidTentBattleRoom_Text_WinnerIsPlayer, MSGBOX_DEFAULT
+	closemessage
+ChampionsTown_PyramidTentBattleRoom_EventScript_IncrementBattleNum::
+	frontier_get FRONTIER_DATA_BATTLE_NUM
+	addvar VAR_RESULT, 1
+	frontier_set FRONTIER_DATA_BATTLE_NUM, VAR_RESULT
+	switch VAR_RESULT
+	case 3, ChampionsTown_PyramidTentBattleRoom_EventScript_WarpToLobbyWon
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_OPPONENT, ChampionsTown_PyramidTentBattleRoom_Movement_OpponentExit
+	waitmovement 0
+	removeobject LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_OPPONENT
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_ATTENDANT, ChampionsTown_PyramidTentBattleRoom_Movement_AttendantApproachPlayer
+	waitmovement 0
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_PLAYER, ChampionsTown_PyramidTentBattleRoom_Movement_PlayerFaceAttendant
+	waitmovement 0
+	msgbox ChampionsTown_PyramidTentBattleRoom_Text_MonsWillBeRestored, MSGBOX_DEFAULT
+	special LoadPlayerParty
+	special SavePlayerParty
+	frontier_setpartyorder FRONTIER_PARTY_SIZE
+	playfanfare MUS_HEAL
+	waitfanfare
+	special HealPlayerParty
+ChampionsTown_PyramidTentBattleRoom_EventScript_AskContinueChallenge::
+	frontier_get FRONTIER_DATA_BATTLE_NUM
+	call_if_eq VAR_RESULT, 1, ChampionsTown_PyramidTentBattleRoom_EventScript_ReadyFor2nd
+	call_if_eq VAR_RESULT, 2, ChampionsTown_PyramidTentBattleRoom_EventScript_ReadyFor3rd
+	multichoice 20, 6, MULTI_GO_ON_REST_RETIRE, TRUE
+	switch VAR_RESULT
+	case 0, ChampionsTown_PyramidTentBattleRoom_EventScript_ContinueChallenge
+	case 1, ChampionsTown_PyramidTentBattleRoom_EventScript_AskPauseChallenge
+	case 2, ChampionsTown_PyramidTentBattleRoom_EventScript_AskRetireChallenge
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_AskPauseChallenge::
+	msgbox ChampionsTown_PyramidTentBattleRoom_Text_SaveAndShutDown, MSGBOX_YESNO
+	switch VAR_RESULT
+	case NO, ChampionsTown_PyramidTentBattleRoom_EventScript_AskContinueChallenge
+	case YES, ChampionsTown_PyramidTentBattleRoom_EventScript_PauseChallenge
+	case MULTI_B_PRESSED, ChampionsTown_PyramidTentBattleRoom_EventScript_AskContinueChallenge
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_AskRetireChallenge::
+	message ChampionsTown_PyramidTentBattleRoom_Text_RetireFromChallenge
+	waitmessage
+	multichoicedefault 20, 8, MULTI_YESNO, 1, FALSE
+	switch VAR_RESULT
+	case 1, ChampionsTown_PyramidTentBattleRoom_EventScript_AskContinueChallenge
+	case 0, ChampionsTown_PyramidTentBattleRoom_EventScript_WarpToLobbyLost
+	case MULTI_B_PRESSED, ChampionsTown_PyramidTentBattleRoom_EventScript_AskContinueChallenge
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_ContinueChallenge::
+	closemessage
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_ATTENDANT, ChampionsTown_PyramidTentBattleRoom_Movement_AttendantReturnToPos
+	waitmovement 0
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_PLAYER, ChampionsTown_PyramidTentBattleRoom_Movement_PlayerFaceBattle
+	waitmovement 0
+	goto ChampionsTown_PyramidTentBattleRoom_EventScript_NextOpponentEnter
+	waitstate
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_WarpToLobbyWon::
+	delay 60
+	frontier_set FRONTIER_DATA_CHALLENGE_STATUS, CHALLENGE_STATUS_WON
+	special LoadPlayerParty
+	warp MAP_CHAMPIONS_TOWN_PYRAMID_TENT_LOBBY, 6, 6
+	waitstate
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_ReadyFor2nd::
+	message ChampionsTown_PyramidTentBattleRoom_Text_ReadyFor2nd
+	waitmessage
+	return
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_ReadyFor3rd::
+	message ChampionsTown_PyramidTentBattleRoom_Text_ReadyFor3rd
+	waitmessage
+	return
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_PauseChallenge::
+	message ChampionsTown_PyramidTentBattleRoom_Text_SavingPleaseWait
+	waitmessage
+	championspyramidtent_save CHALLENGE_STATUS_PAUSED
+	playse SE_SAVE
+	waitse
+	fadescreen FADE_TO_BLACK
+	frontier_reset
+	end
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_ResumeChallenge::
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_ATTENDANT, ChampionsTown_PyramidTentBattleRoom_Movement_AttendantApproachPlayer
+	waitmovement 0
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_PLAYER, ChampionsTown_PyramidTentBattleRoom_Movement_PlayerFaceAttendant
+	waitmovement 0
+	goto ChampionsTown_PyramidTentBattleRoom_EventScript_AskContinueChallenge
+	end
+
+ChampionsTown_PyramidTentBattleRoom_Movement_PlayerEnter:
+	walk_up
+	walk_up
+	walk_up
+	walk_in_place_faster_right
+	step_end
+
+ChampionsTown_PyramidTentBattleRoom_Movement_PlayerFaceBattle:
+	walk_in_place_faster_right
+	step_end
+
+ChampionsTown_PyramidTentBattleRoom_Movement_PlayerFaceAttendant:
+	walk_in_place_faster_left
+	step_end
+
+ChampionsTown_PyramidTentBattleRoom_Movement_OpponentEnter:
+	walk_down
+	walk_down
+	walk_down
+	walk_down
+	walk_in_place_faster_left
+	step_end
+
+ChampionsTown_PyramidTentBattleRoom_Movement_OpponentExit:
+	walk_up
+	walk_up
+	walk_up
+	walk_up
+	step_end
+
+ChampionsTown_PyramidTentBattleRoom_Movement_AttendantJump:
+	disable_jump_landing_ground_effect
+	jump_in_place_down
+	step_end
+
+ChampionsTown_PyramidTentBattleRoom_Movement_AttendantApproachPlayer:
+	walk_down
+	walk_down
+	walk_down
+	walk_in_place_faster_right
+	step_end
+
+ChampionsTown_PyramidTentBattleRoom_Movement_AttendantReturnToPos:
+	walk_up
+	walk_up
+	walk_up
+	walk_in_place_faster_down
+	step_end
+
+ChampionsTown_PyramidTentBattleRoom_OnWarp:
+	map_script_2 VAR_TEMP_1, 0, ChampionsTown_PyramidTentBattleRoom_EventScript_SetUpObjects
+	.2byte 0
+
+ChampionsTown_PyramidTentBattleRoom_EventScript_SetUpObjects::
+	hideobjectat LOCALID_PLAYER, MAP_CHAMPIONS_TOWN_PYRAMID_TENT_BATTLE_ROOM
+	hideobjectat LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_PLAYER, MAP_CHAMPIONS_TOWN_PYRAMID_TENT_BATTLE_ROOM
+	removeobject LOCALID_CHAMPIONS_PYRAMID_TENT_BATTLE_OPPONENT
+	setvar VAR_TEMP_1, 1
+	end
+
+ChampionsTown_PyramidTentBattleRoom_Text_ChamberOpensUp:
+	.string "The corridor opens into a wide\n"
+	.string "chamber…$"
+
+ChampionsTown_PyramidTentBattleRoom_Text_WinnerIsPlayer:
+	.string "And the winner is… {PLAYER}!$"
+
+ChampionsTown_PyramidTentBattleRoom_Text_WinnerIsOpponent:
+	.string "And the winner is… {STR_VAR_1}!$"
+
+ChampionsTown_PyramidTentBattleRoom_Text_MonsWillBeRestored:
+	.string "Your POKéMON will be restored to\n"
+	.string "full health.$"
+
+ChampionsTown_PyramidTentBattleRoom_Text_ReadyFor2nd:
+	.string "Ready for your next challenger?$"
+
+ChampionsTown_PyramidTentBattleRoom_Text_ReadyFor3rd:
+	.string "Ready for your final challenger?$"
+
+ChampionsTown_PyramidTentBattleRoom_Text_SaveAndShutDown:
+	.string "Would you like to save your progress\n"
+	.string "and take a break?$"
+
+ChampionsTown_PyramidTentBattleRoom_Text_RetireFromChallenge:
+	.string "Are you sure you want to retire from\n"
+	.string "the challenge?$"
+
+ChampionsTown_PyramidTentBattleRoom_Text_SavingPleaseWait:
+	.string "Saving…\n"
+	.string "Please wait.$"
+`

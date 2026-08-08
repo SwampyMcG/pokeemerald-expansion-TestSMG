@@ -104,6 +104,18 @@ static void DoFacilityTrainerBattleInternal(u8 facility)
         BattleTransition_StartOnField(GetSpecialBattleTransition(B_TRANSITION_GROUP_B_TOWER));
         break;
     case FACILITY_BATTLE_DOME:
+        if (gSaveBlock2Ptr->frontier.lvlMode == FRONTIER_LVL_TENT)
+        {
+            // Champions Dome Tent - a plain single battle against a Tent-pool trainer, not the
+            // real bracket-tracking Dome engine (which expects a full 16-slot tournament to be
+            // active and would misbehave without one).
+            gBattleTypeFlags = BATTLE_TYPE_TRAINER | BATTLE_TYPE_BATTLE_TOWER;
+            FillTentTrainerParty(FRONTIER_PARTY_SIZE);
+            CreateTask(Task_StartBattleAfterTransition, 1);
+            PlayMapChosenOrBattleBGM(0);
+            BattleTransition_StartOnField(GetSpecialBattleTransition(B_TRANSITION_GROUP_B_DOME));
+            break;
+        }
         gBattleTypeFlags = BATTLE_TYPE_TRAINER | BATTLE_TYPE_DOME;
         if (VarGet(VAR_FRONTIER_BATTLE_MODE) == FRONTIER_MODE_DOUBLES)
         gBattleTypeFlags |= BATTLE_TYPE_DOUBLE;

@@ -261,6 +261,7 @@ void ClearBag(void);
 u16 CountTotalItemQuantityInBag(enum Item itemId);
 bool32 AddPyramidBagItem(enum Item itemId, u16 count);
 bool32 RemovePyramidBagItem(enum Item itemId, u16 count);
+void TransferPyramidBagToBag(void);
 const u8 *GetItemName(enum Item itemId);
 u32 GetItemPrice(enum Item itemId);
 const u8 *GetItemEffect(enum Item itemId);

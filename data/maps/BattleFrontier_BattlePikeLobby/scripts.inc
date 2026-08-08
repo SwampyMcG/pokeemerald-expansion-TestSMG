@@ -47,6 +47,13 @@ BattleFrontier_BattlePikeLobby_EventScript_WonChallenge::
 BattleFrontier_BattlePikeLobby_EventScript_DefeatedQueen::
 	msgbox BattleFrontier_BattlePikeLobby_Text_SnatchedVictoryFromQueen, MSGBOX_DEFAULT
 	waitmessage
+	frontier_get FRONTIER_DATA_LVL_MODE
+	goto_if_eq VAR_RESULT, FRONTIER_LVL_OPEN, BattleFrontier_BattlePikeLobby_EventScript_AwardGoldBottleCap
+	msgbox BattleFrontier_BattlePikeLobby_Text_AwardSilverBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_BOTTLE_CAP
+	goto BattleFrontier_BattlePikeLobby_EventScript_GiveBattlePoints
+
+BattleFrontier_BattlePikeLobby_EventScript_AwardGoldBottleCap::
 	msgbox BattleFrontier_BattlePikeLobby_Text_AwardGoldBottleCap, MSGBOX_DEFAULT
 	giveitem ITEM_GOLD_BOTTLE_CAP
 BattleFrontier_BattlePikeLobby_EventScript_GiveBattlePoints::
@@ -389,6 +396,10 @@ BattleFrontier_BattlePikeLobby_Text_SnatchedVictoryFromQueen:
 BattleFrontier_BattlePikeLobby_Text_AwardGoldBottleCap:
 	.string "And for defeating a FRONTIER BRAIN,\n"
 	.string "please take this.$"
+
+BattleFrontier_BattlePikeLobby_Text_AwardSilverBottleCap:
+	.string "As a token of that victory, please\n"
+	.string "take this.$"
 
 BattleFrontier_BattlePikeLobby_Text_AwardYouTheseBattlePoints:
 	.string "In recognition of your amazing luck,\n"

@@ -17,11 +17,6 @@
       "map": "MAP_BATTLE_FRONTIER_OUTSIDE_EAST",
       "offset": 0,
       "direction": "right"
-    },
-    {
-      "map": "MAP_ALLSTAR_VILLAGE",
-      "offset": -20,
-      "direction": "left"
     }
   ],
   "object_events": [

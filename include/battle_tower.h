@@ -28,6 +28,8 @@ extern const struct FacilityClass gTowerMaleFacilityClasses[FACILITY_CLASSES_MAL
 extern const struct FacilityClass gTowerFemaleFacilityClasses[FACILITY_CLASSES_FEMALE];
 extern const struct TrainerMon gSlateportBattleTentMons[];
 extern const struct BattleFrontierTrainer gSlateportBattleTentTrainers[];
+extern const struct TrainerMon gVerdanturfBattleTentMons[];
+extern const struct BattleFrontierTrainer gVerdanturfBattleTentTrainers[];
 
 void CallBattleTowerFunc(void);
 void PutNewBattleTowerRecord(struct EmeraldBattleTowerRecord *newRecordEm);

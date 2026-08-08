@@ -24,9 +24,17 @@
 #define PIKE_HINT_PEOPLE     3
 #define PIKE_HINT_BRAIN      4
 
-// For the room with a status effect.
-#define PIKE_STATUSMON_KIRLIA   0
-#define PIKE_STATUSMON_DUSCLOPS 1
+// For the room with a status effect. Each curse now shows a type-matched mon instead of
+// splitting everything between just two (see InflictPikeStatusCurse/TryInflictPikePPDrain
+// in battle_pike.c for which curse maps to which).
+#define PIKE_STATUSMON_KIRLIA    0 // Confusion (Psychic)
+#define PIKE_STATUSMON_MUK       1 // Toxic Poison
+#define PIKE_STATUSMON_FROSLASS  2 // Freeze/Frostbite
+#define PIKE_STATUSMON_ELECTRODE 3 // Paralysis
+#define PIKE_STATUSMON_MAGMAR    4 // Burn
+#define PIKE_STATUSMON_HYPNO     5 // Sleep
+#define PIKE_STATUSMON_SABLEYE   6 // PP-drain
+#define NUM_PIKE_STATUSMON       7
 
 #define PIKE_STATUS_FREEZE      0
 #define PIKE_STATUS_BURN        1
@@ -65,12 +73,14 @@
 #define BATTLE_PIKE_FUNC_RESET_HELD_ITEMS          27
 #define BATTLE_PIKE_FUNC_INIT                      28
 #define BATTLE_PIKE_FUNC_GIVE_BONUS_POINTS         29
+#define BATTLE_PIKE_FUNC_TRY_GIVE_NPC_REWARD       30
 
 // Amounts for BATTLE_PIKE_FUNC_GIVE_BONUS_POINTS (VAR_0x8005) - small flat rewards for
 // clearing a room type that's risky/costly rather than the run-ending payout.
 #define PIKE_BONUS_POINTS_CURSE_ROOM  1
 #define PIKE_BONUS_POINTS_HARD_BATTLE 2
 #define PIKE_BONUS_POINTS_DOUBLE_BATTLE 3
+#define PIKE_BONUS_POINTS_LEADER_HARD_BATTLE 5 // Replaces PIKE_BONUS_POINTS_HARD_BATTLE, not added on top of it
 
 #define PIKE_DATA_PRIZE             0
 #define PIKE_DATA_WIN_STREAK        1

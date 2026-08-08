@@ -1748,3 +1748,21 @@ EventScript_PalletTown_PlayersHouse_2F_TurnOnPC::
 	.include "data/maps/CoastalMeadow/scripts.inc"
 
 	.include "data/maps/LegacyLagoon/scripts.inc"
+
+	.include "data/maps/Camerupthumpedbridge/scripts.inc"
+
+	.include "data/maps/VeteransBridge/scripts.inc"
+
+	.include "data/maps/ChampionsTown/scripts.inc"
+
+	.include "data/maps/ChampionsTown_DomeTentLobby/scripts.inc"
+	.include "data/maps/ChampionsTown_DomeTentCorridor/scripts.inc"
+	.include "data/maps/ChampionsTown_DomeTentBattleRoom/scripts.inc"
+
+	.include "data/maps/ChampionsTown_PikeTentLobby/scripts.inc"
+	.include "data/maps/ChampionsTown_PikeTentCorridor/scripts.inc"
+	.include "data/maps/ChampionsTown_PikeTentBattleRoom/scripts.inc"
+
+	.include "data/maps/ChampionsTown_PyramidTentLobby/scripts.inc"
+	.include "data/maps/ChampionsTown_PyramidTentCorridor/scripts.inc"
+	.include "data/maps/ChampionsTown_PyramidTentBattleRoom/scripts.inc"

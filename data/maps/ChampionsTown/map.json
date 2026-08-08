@@ -1,0 +1,78 @@
+{
+  "id": "MAP_CHAMPIONS_TOWN",
+  "name": "ChampionsTown",
+  "layout": "LAYOUT_CHAMPIONS_TOWN",
+  "music": "MUS_DUMMY",
+  "region_map_section": "MAPSEC_ABANDONED_SHIP",
+  "requires_flash": false,
+  "weather": "WEATHER_NONE",
+  "map_type": "MAP_TYPE_CITY",
+  "allow_cycling": true,
+  "allow_escaping": false,
+  "allow_running": true,
+  "show_map_name": true,
+  "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
+  "connections": [
+    {
+      "map": "MAP_VETERANS_BRIDGE",
+      "offset": 40,
+      "direction": "left"
+    },
+    {
+      "map": "MAP_CAMERUPTHUMPEDBRIDGE",
+      "offset": -140,
+      "direction": "up"
+    }
+  ],
+  "object_events": [],
+  "warp_events": [
+    {
+      "x": 15,
+      "y": 27,
+      "elevation": 0,
+      "dest_map": "MAP_CHAMPIONS_TOWN_DOME_TENT_LOBBY",
+      "dest_warp_id": "0"
+    },
+    {
+      "x": 20,
+      "y": 27,
+      "elevation": 0,
+      "dest_map": "MAP_CHAMPIONS_TOWN_PIKE_TENT_LOBBY",
+      "dest_warp_id": "0"
+    },
+    {
+      "x": 25,
+      "y": 27,
+      "elevation": 0,
+      "dest_map": "MAP_CHAMPIONS_TOWN_PYRAMID_TENT_LOBBY",
+      "dest_warp_id": "0"
+    }
+  ],
+  "coord_events": [],
+  "bg_events": [
+    {
+      "type": "sign",
+      "x": 14,
+      "y": 28,
+      "elevation": 0,
+      "player_facing_dir": "BG_EVENT_PLAYER_FACING_ANY",
+      "script": "ChampionsTown_EventScript_DomeTentSign"
+    },
+    {
+      "type": "sign",
+      "x": 19,
+      "y": 28,
+      "elevation": 0,
+      "player_facing_dir": "BG_EVENT_PLAYER_FACING_ANY",
+      "script": "ChampionsTown_EventScript_PikeTentSign"
+    },
+    {
+      "type": "sign",
+      "x": 24,
+      "y": 28,
+      "elevation": 0,
+      "player_facing_dir": "BG_EVENT_PLAYER_FACING_ANY",
+      "script": "ChampionsTown_EventScript_PyramidTentSign"
+    }
+  ]
+}

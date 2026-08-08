@@ -2354,13 +2354,15 @@ static void Print1PRecord(s32 position, s32 x, s32 y, struct RankingHall1P *hall
     {
         TVShowConvertInternationalString(text, hallRecord->name, hallRecord->language);
         AddTextPrinterParameterized(gRecordsWindowId, FONT_NORMAL, text, (x + 2) * 8, (8 * (y + 5 * position)) + 1, TEXT_SKIP_DRAW, NULL);
-        winStreak = hallRecord->winStreak;
-        if (winStreak > MAX_STREAK)
-            winStreak = MAX_STREAK;
-        ConvertIntToDecimalStringN(gStringVar2, winStreak, STR_CONV_MODE_RIGHT_ALIGN, 4);
-        StringExpandPlaceholders(gStringVar4, sHallFacilityToRecordsText[hallFacilityId]);
-        AddTextPrinterParameterized(gRecordsWindowId, FONT_NORMAL, gStringVar4, GetStringRightAlignXOffset(FONT_NORMAL, sHallFacilityToRecordsText[hallFacilityId], 0xC8), (8 * (y + 5 * position)) + 1, TEXT_SKIP_DRAW, NULL);
     }
+    // Always show the streak number and its label, even at 0, instead of leaving an
+    // untracked slot completely blank.
+    winStreak = hallRecord->winStreak;
+    if (winStreak > MAX_STREAK)
+        winStreak = MAX_STREAK;
+    ConvertIntToDecimalStringN(gStringVar2, winStreak, STR_CONV_MODE_RIGHT_ALIGN, 4);
+    StringExpandPlaceholders(gStringVar4, sHallFacilityToRecordsText[hallFacilityId]);
+    AddTextPrinterParameterized(gRecordsWindowId, FONT_NORMAL, gStringVar4, GetStringRightAlignXOffset(FONT_NORMAL, sHallFacilityToRecordsText[hallFacilityId], 0xC8), (8 * (y + 5 * position)) + 1, TEXT_SKIP_DRAW, NULL);
 }
 
 static void Print2PRecord(s32 position, s32 x, s32 y, struct RankingHall2P *hallRecord)
@@ -2380,14 +2382,16 @@ static void Print2PRecord(s32 position, s32 x, s32 y, struct RankingHall2P *hall
         else
             StringCopy(text, hallRecord->name2);
         AddTextPrinterParameterized(gRecordsWindowId, FONT_NORMAL, text, (x + 4) * 8, (8 * (y + 5 * position + 1)) + 1, TEXT_SKIP_DRAW, NULL);
-
-        winStreak = hallRecord->winStreak;
-        if (winStreak > MAX_STREAK)
-            winStreak = MAX_STREAK;
-        ConvertIntToDecimalStringN(gStringVar2, winStreak, STR_CONV_MODE_RIGHT_ALIGN, 4);
-        StringExpandPlaceholders(gStringVar4, sHallFacilityToRecordsText[RANKING_HALL_TOWER_LINK]);
-        AddTextPrinterParameterized(gRecordsWindowId, FONT_NORMAL, gStringVar4, GetStringRightAlignXOffset(FONT_NORMAL, sHallFacilityToRecordsText[RANKING_HALL_TOWER_LINK], 0xC8), (8 * (y + 5 * position)) + 1, TEXT_SKIP_DRAW, NULL);
     }
+
+    // Always show the streak number and its label, even at 0, instead of leaving an
+    // untracked slot completely blank.
+    winStreak = hallRecord->winStreak;
+    if (winStreak > MAX_STREAK)
+        winStreak = MAX_STREAK;
+    ConvertIntToDecimalStringN(gStringVar2, winStreak, STR_CONV_MODE_RIGHT_ALIGN, 4);
+    StringExpandPlaceholders(gStringVar4, sHallFacilityToRecordsText[RANKING_HALL_TOWER_LINK]);
+    AddTextPrinterParameterized(gRecordsWindowId, FONT_NORMAL, gStringVar4, GetStringRightAlignXOffset(FONT_NORMAL, sHallFacilityToRecordsText[RANKING_HALL_TOWER_LINK], 0xC8), (8 * (y + 5 * position)) + 1, TEXT_SKIP_DRAW, NULL);
 }
 
 static void Fill1PRecords(struct RankingHall1P *dst, s32 hallFacilityId, s32 lvlMode)
@@ -2462,7 +2466,7 @@ static void Fill2PRecords(struct RankingHall2P *dst, s32 lvlMode)
 #endif //FREE_RECORD_MIXING_HALL_RECORDS
 }
 
-static void PrintHallRecords(s32 hallFacilityId, s32 lvlMode)
+void PrintHallRecords(s32 hallFacilityId, s32 lvlMode)
 {
     s32 i;
     s32 x;

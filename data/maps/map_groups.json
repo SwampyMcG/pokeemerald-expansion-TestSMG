@@ -75,7 +75,8 @@
     "gMapGroup_IndoorTwoIslandRoute_Frlg",
     "gMapGroup_IndoorSixIslandRoute_Frlg",
     "gMapGroup_IndoorSevenIslandRoute_Frlg",
-    "gMapGroup_AA_Locations"
+    "gMapGroup_AA_Locations",
+    "gMapGroup_IndoorChampionsTown"
   ],
   "gMapGroup_TownsAndRoutes": [
     "PetalburgCity",
@@ -1167,6 +1168,20 @@
     "RisingRock",
     "RisingMeadow",
     "CoastalMeadow",
-    "LegacyLagoon"
+    "LegacyLagoon",
+    "ChampionsTown",
+    "VeteransBridge",
+    "Camerupthumpedbridge"
+  ],
+  "gMapGroup_IndoorChampionsTown": [
+    "ChampionsTown_DomeTentLobby",
+    "ChampionsTown_DomeTentCorridor",
+    "ChampionsTown_DomeTentBattleRoom",
+    "ChampionsTown_PikeTentLobby",
+    "ChampionsTown_PikeTentCorridor",
+    "ChampionsTown_PikeTentBattleRoom",
+    "ChampionsTown_PyramidTentLobby",
+    "ChampionsTown_PyramidTentCorridor",
+    "ChampionsTown_PyramidTentBattleRoom"
   ]
 }

@@ -16,6 +16,7 @@ BattleFrontier_BattlePikeRoomNormal_EventScript_EnterRoom::
 	case PIKE_ROOM_SINGLE_BATTLE, BattleFrontier_BattlePikeRoomNormal_EventScript_EnterSingleBattleRoom
 	case PIKE_ROOM_HEAL_FULL, BattleFrontier_BattlePikeRoomNormal_EventScript_EnterFullHealRoom
 	case PIKE_ROOM_STATUS, BattleFrontier_BattlePikeRoomNormal_EventScript_EnterStatusRoom
+	case PIKE_ROOM_NPC, BattleFrontier_BattlePikeRoomNormal_EventScript_EnterNPCRoom
 	case PIKE_ROOM_HARD_BATTLE, BattleFrontier_BattlePikeRoomNormal_EventScript_EnterHardBattleRoom
 	case PIKE_ROOM_DOUBLE_BATTLE, BattleFrontier_BattlePikeRoomNormal_EventScript_EnterDoubleBattleRoom
 	case PIKE_ROOM_BRAIN, BattleFrontier_BattlePikeRoomNormal_EventScript_EnterBrainRoom
@@ -67,7 +68,25 @@ BattleFrontier_BattlePikeRoomNormal_EventScript_EnterHardBattleRoom::
 	end
 
 BattleFrontier_BattlePikeRoomNormal_EventScript_WonHardBattle::
+	frontier_isleader
+	goto_if_eq VAR_RESULT, TRUE, BattleFrontier_BattlePikeRoomNormal_EventScript_WonHardBattleVsLeader
 	pike_givebonuspoints PIKE_BONUS_POINTS_HARD_BATTLE
+	goto BattleFrontier_BattlePikeRoomNormal_EventScript_HardBattleAftermath
+
+BattleFrontier_BattlePikeRoomNormal_EventScript_WonHardBattleVsLeader::
+	pike_givebonuspoints PIKE_BONUS_POINTS_LEADER_HARD_BATTLE
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_DefeatedLeader, MSGBOX_DEFAULT
+	frontier_get FRONTIER_DATA_LVL_MODE
+	goto_if_eq VAR_RESULT, FRONTIER_LVL_OPEN, BattleFrontier_BattlePikeRoomNormal_EventScript_AwardGoldBottleCap
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_AwardSilverBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_BOTTLE_CAP
+	goto BattleFrontier_BattlePikeRoomNormal_EventScript_HardBattleAftermath
+
+BattleFrontier_BattlePikeRoomNormal_EventScript_AwardGoldBottleCap::
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_AwardGoldBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_GOLD_BOTTLE_CAP
+
+BattleFrontier_BattlePikeRoomNormal_EventScript_HardBattleAftermath::
 	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_NPCExit
 	waitmovement 0
 	applymovement LOCALID_PIKE_ROOM_NPC_2, BattleFrontier_BattlePikeRoomNormal_Movement_HealNPCApproachPlayer
@@ -226,6 +245,23 @@ BattleFrontier_BattlePikeRoomNormal_EventScript_EnterFullHealRoom::
 	releaseall
 	end
 
+BattleFrontier_BattlePikeRoomNormal_EventScript_EnterNPCRoom::
+	pike_getnpcreward
+	goto_if_eq VAR_RESULT, FALSE, BattleFrontier_BattlePikeRoomNormal_EventScript_EnterNPCRoomEnd
+	lockall
+	delay 16
+	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_RewardNPCApproach
+	waitmovement 0
+	msgbox gStringVar4, MSGBOX_DEFAULT
+	waitmessage
+	closemessage
+	applymovement LOCALID_PLAYER, BattleFrontier_BattlePikeRoomNormal_Movement_PlayerStepAsideForReward
+	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_RewardNPCExitSouth
+	waitmovement 0
+	releaseall
+BattleFrontier_BattlePikeRoomNormal_EventScript_EnterNPCRoomEnd::
+	end
+
 BattleFrontier_BattlePikeRoomNormal_EventScript_EnterDoubleBattleRoom::
 	lockall
 	delay 16
@@ -276,23 +312,28 @@ BattleFrontier_BattlePikeRoomNormal_EventScript_EnterStatusRoom::
 	pike_getstatusmon
 	copyvar VAR_0x8004, VAR_RESULT
 	call_if_eq VAR_0x8004, PIKE_STATUSMON_KIRLIA, BattleFrontier_BattlePikeRoomNormal_EventScript_KirliaAttack
-	call_if_eq VAR_0x8004, PIKE_STATUSMON_DUSCLOPS, BattleFrontier_BattlePikeRoomNormal_EventScript_DusclopsAttack
+	call_if_eq VAR_0x8004, PIKE_STATUSMON_MUK, BattleFrontier_BattlePikeRoomNormal_EventScript_MukAttack
+	call_if_eq VAR_0x8004, PIKE_STATUSMON_FROSLASS, BattleFrontier_BattlePikeRoomNormal_EventScript_FroslassAttack
+	call_if_eq VAR_0x8004, PIKE_STATUSMON_ELECTRODE, BattleFrontier_BattlePikeRoomNormal_EventScript_ElectrodeAttack
+	call_if_eq VAR_0x8004, PIKE_STATUSMON_MAGMAR, BattleFrontier_BattlePikeRoomNormal_EventScript_MagmarAttack
+	call_if_eq VAR_0x8004, PIKE_STATUSMON_HYPNO, BattleFrontier_BattlePikeRoomNormal_EventScript_HypnoAttack
+	call_if_eq VAR_0x8004, PIKE_STATUSMON_SABLEYE, BattleFrontier_BattlePikeRoomNormal_EventScript_SableyeAttack
 	msgbox BattleFrontier_BattlePikeRoomNormal_Text_AttacksWhenStartled, MSGBOX_DEFAULT
 	closemessage
 	releaseall
 	end
 
+@ Every PIKE_STATUSMON_* now maps to exactly one curse, so unlike the old Kirlia/Dusclops
+@ split (which had to branch on pike_getstatus to pick the right "used X move" line),
+@ each of these plays out identically apart from which mon/cry/move line is shown.
 BattleFrontier_BattlePikeRoomNormal_EventScript_KirliaAttack::
 	msgbox BattleFrontier_BattlePikeRoomNormal_Text_KirliaStop, MSGBOX_DEFAULT
 	closemessage
 	waitse
 	playmoncry SPECIES_KIRLIA, CRY_MODE_NORMAL
 	waitmoncry
-	pike_getstatus
-	call_if_eq VAR_RESULT, PIKE_STATUS_TOXIC, BattleFrontier_BattlePikeRoomNormal_EventScript_KirliaUsedToxic
-	call_if_eq VAR_RESULT, PIKE_STATUS_BURN, BattleFrontier_BattlePikeRoomNormal_EventScript_KirliaUsedWillOWisp
-	call_if_eq VAR_RESULT, PIKE_STATUS_PARALYSIS, BattleFrontier_BattlePikeRoomNormal_EventScript_KirliaUsedThunderWave
-	call_if_eq VAR_RESULT, PIKE_STATUS_SLEEP, BattleFrontier_BattlePikeRoomNormal_EventScript_KirliaUsedHypnosis
+	message BattleFrontier_BattlePikeRoomNormal_Text_KirliaUsedConfuseRay
+	waitmessage
 	pike_flashscreen
 	waitstate
 	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_NPCApproachMon
@@ -313,15 +354,14 @@ BattleFrontier_BattlePikeRoomNormal_EventScript_KirliaAttack::
 	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForKirlia, MSGBOX_DEFAULT
 	return
 
-BattleFrontier_BattlePikeRoomNormal_EventScript_DusclopsAttack::
-	msgbox BattleFrontier_BattlePikeRoomNormal_Text_DusclopsStop, MSGBOX_DEFAULT
+BattleFrontier_BattlePikeRoomNormal_EventScript_MukAttack::
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_MukStop, MSGBOX_DEFAULT
 	closemessage
 	waitse
-	playmoncry SPECIES_DUSCLOPS, CRY_MODE_NORMAL
+	playmoncry SPECIES_MUK, CRY_MODE_NORMAL
 	waitmoncry
-	pike_getstatus
-	call_if_eq VAR_RESULT, PIKE_STATUS_FREEZE, BattleFrontier_BattlePikeRoomNormal_EventScript_DusclopsUsedIceBeam
-	call_if_eq VAR_RESULT, PIKE_STATUS_BURN, BattleFrontier_BattlePikeRoomNormal_EventScript_DusclopsUsedWillOWisp
+	message BattleFrontier_BattlePikeRoomNormal_Text_MukUsedToxic
+	waitmessage
 	pike_flashscreen
 	waitstate
 	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_NPCApproachMon
@@ -329,47 +369,157 @@ BattleFrontier_BattlePikeRoomNormal_EventScript_DusclopsAttack::
 	applymovement LOCALID_PIKE_ROOM_NPC_2, BattleFrontier_BattlePikeRoomNormal_Movement_MonFaceNPC
 	waitmovement 0
 	waitse
-	playmoncry SPECIES_DUSCLOPS, CRY_MODE_NORMAL
+	playmoncry SPECIES_MUK, CRY_MODE_NORMAL
 	waitmoncry
 	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ThatsEnough, MSGBOX_DEFAULT
 	waitse
-	playmoncry SPECIES_DUSCLOPS, CRY_MODE_NORMAL
+	playmoncry SPECIES_MUK, CRY_MODE_NORMAL
 	waitmoncry
 	closemessage
 	applymovement LOCALID_PIKE_ROOM_NPC_2, BattleFrontier_BattlePikeRoomNormal_Movement_MonMoveAside
 	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_StatusNPCApproachPlayer
 	waitmovement 0
-	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForDusclops, MSGBOX_DEFAULT
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForMuk, MSGBOX_DEFAULT
 	return
 
-BattleFrontier_BattlePikeRoomNormal_EventScript_KirliaUsedToxic::
-	message BattleFrontier_BattlePikeRoomNormal_Text_KirliaUsedToxic
+BattleFrontier_BattlePikeRoomNormal_EventScript_FroslassAttack::
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_FroslassStop, MSGBOX_DEFAULT
+	closemessage
+	waitse
+	playmoncry SPECIES_FROSLASS, CRY_MODE_NORMAL
+	waitmoncry
+	message BattleFrontier_BattlePikeRoomNormal_Text_FroslassUsedIceBeam
 	waitmessage
+	pike_flashscreen
+	waitstate
+	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_NPCApproachMon
+	waitmovement 0
+	applymovement LOCALID_PIKE_ROOM_NPC_2, BattleFrontier_BattlePikeRoomNormal_Movement_MonFaceNPC
+	waitmovement 0
+	waitse
+	playmoncry SPECIES_FROSLASS, CRY_MODE_NORMAL
+	waitmoncry
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ThatsEnough, MSGBOX_DEFAULT
+	waitse
+	playmoncry SPECIES_FROSLASS, CRY_MODE_NORMAL
+	waitmoncry
+	closemessage
+	applymovement LOCALID_PIKE_ROOM_NPC_2, BattleFrontier_BattlePikeRoomNormal_Movement_MonMoveAside
+	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_StatusNPCApproachPlayer
+	waitmovement 0
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForFroslass, MSGBOX_DEFAULT
 	return
 
-BattleFrontier_BattlePikeRoomNormal_EventScript_KirliaUsedWillOWisp::
-	message BattleFrontier_BattlePikeRoomNormal_Text_KirliaUsedWillOWisp
+BattleFrontier_BattlePikeRoomNormal_EventScript_ElectrodeAttack::
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ElectrodeStop, MSGBOX_DEFAULT
+	closemessage
+	waitse
+	playmoncry SPECIES_ELECTRODE, CRY_MODE_NORMAL
+	waitmoncry
+	message BattleFrontier_BattlePikeRoomNormal_Text_ElectrodeUsedThunderWave
 	waitmessage
+	pike_flashscreen
+	waitstate
+	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_NPCApproachMon
+	waitmovement 0
+	applymovement LOCALID_PIKE_ROOM_NPC_2, BattleFrontier_BattlePikeRoomNormal_Movement_MonFaceNPC
+	waitmovement 0
+	waitse
+	playmoncry SPECIES_ELECTRODE, CRY_MODE_NORMAL
+	waitmoncry
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ThatsEnough, MSGBOX_DEFAULT
+	waitse
+	playmoncry SPECIES_ELECTRODE, CRY_MODE_NORMAL
+	waitmoncry
+	closemessage
+	applymovement LOCALID_PIKE_ROOM_NPC_2, BattleFrontier_BattlePikeRoomNormal_Movement_MonMoveAside
+	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_StatusNPCApproachPlayer
+	waitmovement 0
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForElectrode, MSGBOX_DEFAULT
 	return
 
-BattleFrontier_BattlePikeRoomNormal_EventScript_KirliaUsedThunderWave::
-	message BattleFrontier_BattlePikeRoomNormal_Text_KirliaUsedThunderWave
+BattleFrontier_BattlePikeRoomNormal_EventScript_MagmarAttack::
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_MagmarStop, MSGBOX_DEFAULT
+	closemessage
+	waitse
+	playmoncry SPECIES_MAGMAR, CRY_MODE_NORMAL
+	waitmoncry
+	message BattleFrontier_BattlePikeRoomNormal_Text_MagmarUsedWillOWisp
 	waitmessage
+	pike_flashscreen
+	waitstate
+	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_NPCApproachMon
+	waitmovement 0
+	applymovement LOCALID_PIKE_ROOM_NPC_2, BattleFrontier_BattlePikeRoomNormal_Movement_MonFaceNPC
+	waitmovement 0
+	waitse
+	playmoncry SPECIES_MAGMAR, CRY_MODE_NORMAL
+	waitmoncry
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ThatsEnough, MSGBOX_DEFAULT
+	waitse
+	playmoncry SPECIES_MAGMAR, CRY_MODE_NORMAL
+	waitmoncry
+	closemessage
+	applymovement LOCALID_PIKE_ROOM_NPC_2, BattleFrontier_BattlePikeRoomNormal_Movement_MonMoveAside
+	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_StatusNPCApproachPlayer
+	waitmovement 0
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForMagmar, MSGBOX_DEFAULT
 	return
 
-BattleFrontier_BattlePikeRoomNormal_EventScript_KirliaUsedHypnosis::
-	message BattleFrontier_BattlePikeRoomNormal_Text_KirliaUsedHypnosis
+BattleFrontier_BattlePikeRoomNormal_EventScript_HypnoAttack::
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_HypnoStop, MSGBOX_DEFAULT
+	closemessage
+	waitse
+	playmoncry SPECIES_HYPNO, CRY_MODE_NORMAL
+	waitmoncry
+	message BattleFrontier_BattlePikeRoomNormal_Text_HypnoUsedHypnosis
 	waitmessage
+	pike_flashscreen
+	waitstate
+	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_NPCApproachMon
+	waitmovement 0
+	applymovement LOCALID_PIKE_ROOM_NPC_2, BattleFrontier_BattlePikeRoomNormal_Movement_MonFaceNPC
+	waitmovement 0
+	waitse
+	playmoncry SPECIES_HYPNO, CRY_MODE_NORMAL
+	waitmoncry
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ThatsEnough, MSGBOX_DEFAULT
+	waitse
+	playmoncry SPECIES_HYPNO, CRY_MODE_NORMAL
+	waitmoncry
+	closemessage
+	applymovement LOCALID_PIKE_ROOM_NPC_2, BattleFrontier_BattlePikeRoomNormal_Movement_MonMoveAside
+	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_StatusNPCApproachPlayer
+	waitmovement 0
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForHypno, MSGBOX_DEFAULT
 	return
 
-BattleFrontier_BattlePikeRoomNormal_EventScript_DusclopsUsedIceBeam::
-	message BattleFrontier_BattlePikeRoomNormal_Text_DusclopsUsedIceBeam
+BattleFrontier_BattlePikeRoomNormal_EventScript_SableyeAttack::
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_SableyeStop, MSGBOX_DEFAULT
+	closemessage
+	waitse
+	playmoncry SPECIES_SABLEYE, CRY_MODE_NORMAL
+	waitmoncry
+	message BattleFrontier_BattlePikeRoomNormal_Text_SableyeUsedSpite
 	waitmessage
-	return
-
-BattleFrontier_BattlePikeRoomNormal_EventScript_DusclopsUsedWillOWisp::
-	message BattleFrontier_BattlePikeRoomNormal_Text_DusclopsUsedWillOWisp
-	waitmessage
+	pike_flashscreen
+	waitstate
+	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_NPCApproachMon
+	waitmovement 0
+	applymovement LOCALID_PIKE_ROOM_NPC_2, BattleFrontier_BattlePikeRoomNormal_Movement_MonFaceNPC
+	waitmovement 0
+	waitse
+	playmoncry SPECIES_SABLEYE, CRY_MODE_NORMAL
+	waitmoncry
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ThatsEnough, MSGBOX_DEFAULT
+	waitse
+	playmoncry SPECIES_SABLEYE, CRY_MODE_NORMAL
+	waitmoncry
+	closemessage
+	applymovement LOCALID_PIKE_ROOM_NPC_2, BattleFrontier_BattlePikeRoomNormal_Movement_MonMoveAside
+	applymovement LOCALID_PIKE_ROOM_NPC_1, BattleFrontier_BattlePikeRoomNormal_Movement_StatusNPCApproachPlayer
+	waitmovement 0
+	msgbox BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForSableye, MSGBOX_DEFAULT
 	return
 
 BattleFrontier_BattlePikeRoomNormal_EventScript_DoPikeQueenBattle::
@@ -382,6 +532,28 @@ BattleFrontier_BattlePikeRoomNormal_EventScript_DoPikeQueenBattle::
 
 BattleFrontier_BattlePikeRoomNormal_Movement_ApproachPlayer:
 	walk_down
+	walk_down
+	step_end
+
+@ Dedicated to the NPC room's reward vignette - deliberately separate from the shared
+@ Movement_ApproachPlayer/Movement_NPCExit above, which trainer rooms also use.
+BattleFrontier_BattlePikeRoomNormal_Movement_RewardNPCApproach:
+	walk_down
+	walk_down
+	face_left
+	step_end
+
+BattleFrontier_BattlePikeRoomNormal_Movement_PlayerStepAsideForReward:
+	walk_left
+	step_end
+
+BattleFrontier_BattlePikeRoomNormal_Movement_RewardNPCExitSouth:
+	walk_left
+	face_down
+	walk_down
+	walk_down
+	walk_down
+	set_invisible
 	walk_down
 	step_end
 
@@ -692,39 +864,82 @@ BattleFrontier_BattlePikeRoomNormal_Text_KirliaStop:
 	.string "Now, now!\n"
 	.string "KIRLIA, stop that!$"
 
-BattleFrontier_BattlePikeRoomNormal_Text_DusclopsStop:
-	.string "Now, now!\n"
-	.string "DUSCLOPS, stop that!$"
-
-BattleFrontier_BattlePikeRoomNormal_Text_KirliaUsedToxic:
-	.string "KIRLIA used TOXIC!$"
-
-BattleFrontier_BattlePikeRoomNormal_Text_KirliaUsedHypnosis:
-	.string "KIRLIA used HYPNOSIS!$"
-
-BattleFrontier_BattlePikeRoomNormal_Text_KirliaUsedThunderWave:
-	.string "KIRLIA used THUNDER WAVE!$"
-
-BattleFrontier_BattlePikeRoomNormal_Text_KirliaUsedWillOWisp:
-	.string "KIRLIA used WILL-O-WISP!$"
-
-BattleFrontier_BattlePikeRoomNormal_Text_DusclopsUsedWillOWisp:
-	.string "DUSCLOPS used WILL-O-WISP!$"
-
-BattleFrontier_BattlePikeRoomNormal_Text_DusclopsUsedIceBeam:
-	.string "DUSCLOPS used ICE BEAM!$"
-
-BattleFrontier_BattlePikeRoomNormal_Text_ThatsEnough:
-	.string "Look here!\n"
-	.string "That's quite enough!$"
+BattleFrontier_BattlePikeRoomNormal_Text_KirliaUsedConfuseRay:
+	.string "KIRLIA used CONFUSE RAY!$"
 
 BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForKirlia:
 	.string "I must apologize to you…\p"
 	.string "My KIRLIA has a TIMID nature…$"
 
-BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForDusclops:
+BattleFrontier_BattlePikeRoomNormal_Text_MukStop:
+	.string "Now, now!\n"
+	.string "MUK, stop that!$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_MukUsedToxic:
+	.string "MUK used TOXIC!$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForMuk:
 	.string "I must apologize to you…\p"
-	.string "My DUSCLOPS has a TIMID nature…$"
+	.string "My MUK has a TIMID nature…$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_FroslassStop:
+	.string "Now, now!\n"
+	.string "FROSLASS, stop that!$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_FroslassUsedIceBeam:
+	.string "FROSLASS used ICE BEAM!$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForFroslass:
+	.string "I must apologize to you…\p"
+	.string "My FROSLASS has a TIMID nature…$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_ElectrodeStop:
+	.string "Now, now!\n"
+	.string "ELECTRODE, stop that!$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_ElectrodeUsedThunderWave:
+	.string "ELECTRODE used THUNDER WAVE!$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForElectrode:
+	.string "I must apologize to you…\p"
+	.string "My ELECTRODE has a TIMID nature…$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_MagmarStop:
+	.string "Now, now!\n"
+	.string "MAGMAR, stop that!$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_MagmarUsedWillOWisp:
+	.string "MAGMAR used WILL-O-WISP!$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForMagmar:
+	.string "I must apologize to you…\p"
+	.string "My MAGMAR has a TIMID nature…$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_HypnoStop:
+	.string "Now, now!\n"
+	.string "HYPNO, stop that!$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_HypnoUsedHypnosis:
+	.string "HYPNO used HYPNOSIS!$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForHypno:
+	.string "I must apologize to you…\p"
+	.string "My HYPNO has a TIMID nature…$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_SableyeStop:
+	.string "Now, now!\n"
+	.string "SABLEYE, stop that!$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_SableyeUsedSpite:
+	.string "SABLEYE used SPITE!$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_ApologizeForSableye:
+	.string "I must apologize to you…\p"
+	.string "My SABLEYE has a TIMID nature…$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_ThatsEnough:
+	.string "Look here!\n"
+	.string "That's quite enough!$"
 
 BattleFrontier_BattlePikeRoomNormal_Text_AttacksWhenStartled:
 	.string "It attacks without warning if it is\n"
@@ -743,6 +958,19 @@ BattleFrontier_BattlePikeRoomNormal_Text_BattleSomewhatToughTrainer:
 	.string "Welcome…\p"
 	.string "Here, we will have you battle\n"
 	.string "a somewhat-tough TRAINER…$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_DefeatedLeader:
+	.string "Incredible! You've defeated a visiting\n"
+	.string "GYM LEADER!\p"
+	.string "$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_AwardSilverBottleCap:
+	.string "As a token of that victory, please\n"
+	.string "take this.$"
+
+BattleFrontier_BattlePikeRoomNormal_Text_AwardGoldBottleCap:
+	.string "And since this is a BATTLE PIKE OPEN\n"
+	.string "LEVEL challenge, please take this too.$"
 
 BattleFrontier_BattlePikeRoomNormal_Text_RestoreToFullHealth:
 	.string "How wonderful…\p"

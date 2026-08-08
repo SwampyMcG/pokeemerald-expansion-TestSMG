@@ -9347,8 +9347,8 @@
     {
       "id": "LAYOUT_RISING_MEADOW",
       "name": "RisingMeadow_Layout",
-      "width": 60,
-      "height": 80,
+      "width": 40,
+      "height": 120,
       "primary_tileset": "gTileset_General",
       "secondary_tileset": "gTileset_BattleFrontierOutsideEast",
       "border_filepath": "data/layouts/RisingMeadow/border.bin",
@@ -9373,6 +9373,36 @@
       "secondary_tileset": "gTileset_Rustboro",
       "border_filepath": "data/layouts/LegacyLagoon/border.bin",
       "blockdata_filepath": "data/layouts/LegacyLagoon/map.bin"
+    },
+    {
+      "id": "LAYOUT_CHAMPIONS_TOWN",
+      "name": "ChampionsTown_Layout",
+      "width": 40,
+      "height": 120,
+      "primary_tileset": "gTileset_General",
+      "secondary_tileset": "gTileset_Mauville",
+      "border_filepath": "data/layouts/ChampionsTown/border.bin",
+      "blockdata_filepath": "data/layouts/ChampionsTown/map.bin"
+    },
+    {
+      "id": "LAYOUT_CAMERUPTHUMPEDBRIDGE",
+      "name": "Camerupthumpedbridge_Layout",
+      "width": 180,
+      "height": 38,
+      "primary_tileset": "gTileset_General",
+      "secondary_tileset": "gTileset_Mauville",
+      "border_filepath": "data/layouts/Camerupthumpedbridge/border.bin",
+      "blockdata_filepath": "data/layouts/Camerupthumpedbridge/map.bin"
+    },
+    {
+      "id": "LAYOUT_VETERANS_BRIDGE",
+      "name": "VeteransBridge_Layout",
+      "width": 100,
+      "height": 60,
+      "primary_tileset": "gTileset_General",
+      "secondary_tileset": "gTileset_Mauville",
+      "border_filepath": "data/layouts/VeteransBridge/border.bin",
+      "blockdata_filepath": "data/layouts/VeteransBridge/map.bin"
     }
   ]
 }

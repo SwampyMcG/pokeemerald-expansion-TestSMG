@@ -1,0 +1,301 @@
+raw`
+ChampionsTown_DomeTentBattleRoom_MapScripts::
+	map_script MAP_SCRIPT_ON_TRANSITION, ChampionsTown_DomeTentBattleRoom_OnTransition
+	map_script MAP_SCRIPT_ON_FRAME_TABLE, ChampionsTown_DomeTentBattleRoom_OnFrame
+	map_script MAP_SCRIPT_ON_WARP_INTO_MAP_TABLE, ChampionsTown_DomeTentBattleRoom_OnWarp
+	.byte 0
+
+@ On this map the player will automatically walk into the room, but the camera is supposed to remain still.
+@ To do this GF sets the player (LOCALID_PLAYER) invisible and creates a fake player object (LOCALID_CHAMPIONS_DOME_TENT_BATTLE_PLAYER).
+@ The graphics of this fake player object are represented with VAR_OBJ_GFX_ID_1.
+@ The graphics of the opponent are represented with VAR_OBJ_GFX_ID_0, which will ultimately be set by tower_setopponent.
+ChampionsTown_DomeTentBattleRoom_OnTransition:
+	call ChampionsTown_DomeTentBattleRoom_EventScript_SetPlayerGfx
+	end
+
+ChampionsTown_DomeTentBattleRoom_EventScript_SetPlayerGfx::
+	checkplayergender
+	goto_if_eq VAR_RESULT, MALE, ChampionsTown_DomeTentBattleRoom_EventScript_SetPlayerGfxMale
+	goto_if_eq VAR_RESULT, FEMALE, ChampionsTown_DomeTentBattleRoom_EventScript_SetPlayerGfxFemale
+	return
+
+ChampionsTown_DomeTentBattleRoom_EventScript_SetPlayerGfxMale::
+	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_RIVAL_BRENDAN_NORMAL
+	setvar VAR_OBJ_GFX_ID_0, OBJ_EVENT_GFX_RIVAL_BRENDAN_NORMAL
+	return
+
+ChampionsTown_DomeTentBattleRoom_EventScript_SetPlayerGfxFemale::
+	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_RIVAL_MAY_NORMAL
+	setvar VAR_OBJ_GFX_ID_0, OBJ_EVENT_GFX_RIVAL_MAY_NORMAL
+	return
+
+ChampionsTown_DomeTentBattleRoom_OnFrame:
+	map_script_2 VAR_TEMP_0, 0, ChampionsTown_DomeTentBattleRoom_EventScript_EnterRoom
+	.2byte 0
+
+ChampionsTown_DomeTentBattleRoom_EventScript_EnterRoom::
+	lockall
+	showobjectat LOCALID_CHAMPIONS_DOME_TENT_BATTLE_PLAYER, MAP_CHAMPIONS_TOWN_DOME_TENT_BATTLE_ROOM
+	applymovement LOCALID_CHAMPIONS_DOME_TENT_BATTLE_PLAYER, ChampionsTown_DomeTentBattleRoom_Movement_PlayerEnter
+	waitmovement 0
+	frontier_get FRONTIER_DATA_BATTLE_NUM
+	goto_if_ne VAR_RESULT, 0, ChampionsTown_DomeTentBattleRoom_EventScript_ResumeChallenge
+ChampionsTown_DomeTentBattleRoom_EventScript_NextOpponentEnter::
+	tower_setopponent
+	addobject LOCALID_CHAMPIONS_DOME_TENT_BATTLE_OPPONENT
+	applymovement LOCALID_CHAMPIONS_DOME_TENT_BATTLE_OPPONENT, ChampionsTown_DomeTentBattleRoom_Movement_OpponentEnter
+	waitmovement 0
+	applymovement LOCALID_CHAMPIONS_DOME_TENT_BATTLE_ATTENDANT, ChampionsTown_DomeTentBattleRoom_Movement_AttendantJump
+	playse SE_M_BELLY_DRUM
+	waitse
+	waitmovement 0
+	frontier_get FRONTIER_DATA_BATTLE_NUM
+	switch VAR_RESULT
+	case 0, ChampionsTown_DomeTentBattleRoom_EventScript_AnnounceRoundOf8
+	case 1, ChampionsTown_DomeTentBattleRoom_EventScript_AnnounceSemifinal
+	case 2, ChampionsTown_DomeTentBattleRoom_EventScript_AnnounceFinal
+
+ChampionsTown_DomeTentBattleRoom_EventScript_AnnounceRoundOf8::
+	msgbox ChampionsTown_DomeTentBattleRoom_Text_RoundOf8Begin, MSGBOX_DEFAULT
+	goto ChampionsTown_DomeTentBattleRoom_EventScript_IntroduceOpponent
+
+ChampionsTown_DomeTentBattleRoom_EventScript_AnnounceSemifinal::
+	msgbox ChampionsTown_DomeTentBattleRoom_Text_SemifinalBegin, MSGBOX_DEFAULT
+	goto ChampionsTown_DomeTentBattleRoom_EventScript_IntroduceOpponent
+
+ChampionsTown_DomeTentBattleRoom_EventScript_AnnounceFinal::
+	msgbox ChampionsTown_DomeTentBattleRoom_Text_FinalBegin, MSGBOX_DEFAULT
+
+ChampionsTown_DomeTentBattleRoom_EventScript_IntroduceOpponent::
+	battletent_getopponentintro
+	msgbox gStringVar4, MSGBOX_DEFAULT
+	waitmessage
+	call ChampionsTown_DomeTentBattleRoom_EventScript_DoDomeBattle
+	switch VAR_RESULT
+	case 1, ChampionsTown_DomeTentBattleRoom_EventScript_DefeatedOpponent
+	applymovement LOCALID_CHAMPIONS_DOME_TENT_BATTLE_ATTENDANT, ChampionsTown_DomeTentBattleRoom_Movement_AttendantJump
+	playse SE_M_SNORE
+	waitse
+	waitmovement 0
+	championsdometent_getopponentname
+	msgbox ChampionsTown_DomeTentBattleRoom_Text_WinnerIsOpponent, MSGBOX_DEFAULT
+ChampionsTown_DomeTentBattleRoom_EventScript_WarpToLobbyLost::
+	frontier_set FRONTIER_DATA_CHALLENGE_STATUS, CHALLENGE_STATUS_LOST
+	special LoadPlayerParty
+	warp MAP_CHAMPIONS_TOWN_DOME_TENT_LOBBY, 6, 6
+	waitstate
+
+ChampionsTown_DomeTentBattleRoom_EventScript_DoDomeBattle::
+	closemessage
+	special HealPlayerParty
+	dofacilitytrainerbattle FACILITY_BATTLE_DOME
+	waitstate
+	frontier_restorehelditems
+	special HealPlayerParty
+	return
+
+ChampionsTown_DomeTentBattleRoom_EventScript_DefeatedOpponent::
+	applymovement LOCALID_CHAMPIONS_DOME_TENT_BATTLE_ATTENDANT, ChampionsTown_DomeTentBattleRoom_Movement_AttendantJump
+	playse SE_BANG
+	waitse
+	waitmovement 0
+	msgbox ChampionsTown_DomeTentBattleRoom_Text_WinnerIsPlayer, MSGBOX_DEFAULT
+	closemessage
+ChampionsTown_DomeTentBattleRoom_EventScript_IncrementBattleNum::
+	frontier_get FRONTIER_DATA_BATTLE_NUM
+	addvar VAR_RESULT, 1
+	frontier_set FRONTIER_DATA_BATTLE_NUM, VAR_RESULT
+	switch VAR_RESULT
+	case 3, ChampionsTown_DomeTentBattleRoom_EventScript_WarpToLobbyWon
+	applymovement LOCALID_CHAMPIONS_DOME_TENT_BATTLE_OPPONENT, ChampionsTown_DomeTentBattleRoom_Movement_OpponentExit
+	waitmovement 0
+	removeobject LOCALID_CHAMPIONS_DOME_TENT_BATTLE_OPPONENT
+	applymovement LOCALID_CHAMPIONS_DOME_TENT_BATTLE_ATTENDANT, ChampionsTown_DomeTentBattleRoom_Movement_AttendantApproachPlayer
+	waitmovement 0
+	applymovement LOCALID_CHAMPIONS_DOME_TENT_BATTLE_PLAYER, ChampionsTown_DomeTentBattleRoom_Movement_PlayerFaceAttendant
+	waitmovement 0
+	msgbox ChampionsTown_DomeTentBattleRoom_Text_MonsWillBeRestored, MSGBOX_DEFAULT
+	special LoadPlayerParty
+	special SavePlayerParty
+	frontier_setpartyorder FRONTIER_PARTY_SIZE
+	playfanfare MUS_HEAL
+	waitfanfare
+	special HealPlayerParty
+ChampionsTown_DomeTentBattleRoom_EventScript_AskContinueChallenge::
+	frontier_get FRONTIER_DATA_BATTLE_NUM
+	call_if_eq VAR_RESULT, 1, ChampionsTown_DomeTentBattleRoom_EventScript_ReadyForSemifinal
+	call_if_eq VAR_RESULT, 2, ChampionsTown_DomeTentBattleRoom_EventScript_ReadyForFinal
+	multichoice 20, 6, MULTI_GO_ON_REST_RETIRE, TRUE
+	switch VAR_RESULT
+	case 0, ChampionsTown_DomeTentBattleRoom_EventScript_ContinueChallenge
+	case 1, ChampionsTown_DomeTentBattleRoom_EventScript_AskPauseChallenge
+	case 2, ChampionsTown_DomeTentBattleRoom_EventScript_AskRetireChallenge
+
+ChampionsTown_DomeTentBattleRoom_EventScript_AskPauseChallenge::
+	msgbox ChampionsTown_DomeTentBattleRoom_Text_SaveAndShutDown, MSGBOX_YESNO
+	switch VAR_RESULT
+	case NO, ChampionsTown_DomeTentBattleRoom_EventScript_AskContinueChallenge
+	case YES, ChampionsTown_DomeTentBattleRoom_EventScript_PauseChallenge
+	case MULTI_B_PRESSED, ChampionsTown_DomeTentBattleRoom_EventScript_AskContinueChallenge
+
+ChampionsTown_DomeTentBattleRoom_EventScript_AskRetireChallenge::
+	message ChampionsTown_DomeTentBattleRoom_Text_RetireFromChallenge
+	waitmessage
+	multichoicedefault 20, 8, MULTI_YESNO, 1, FALSE
+	switch VAR_RESULT
+	case 1, ChampionsTown_DomeTentBattleRoom_EventScript_AskContinueChallenge
+	case 0, ChampionsTown_DomeTentBattleRoom_EventScript_WarpToLobbyLost
+	case MULTI_B_PRESSED, ChampionsTown_DomeTentBattleRoom_EventScript_AskContinueChallenge
+
+ChampionsTown_DomeTentBattleRoom_EventScript_ContinueChallenge::
+	closemessage
+	applymovement LOCALID_CHAMPIONS_DOME_TENT_BATTLE_ATTENDANT, ChampionsTown_DomeTentBattleRoom_Movement_AttendantReturnToPos
+	waitmovement 0
+	applymovement LOCALID_CHAMPIONS_DOME_TENT_BATTLE_PLAYER, ChampionsTown_DomeTentBattleRoom_Movement_PlayerFaceBattle
+	waitmovement 0
+	goto ChampionsTown_DomeTentBattleRoom_EventScript_NextOpponentEnter
+	waitstate
+
+ChampionsTown_DomeTentBattleRoom_EventScript_WarpToLobbyWon::
+	delay 60
+	frontier_set FRONTIER_DATA_CHALLENGE_STATUS, CHALLENGE_STATUS_WON
+	special LoadPlayerParty
+	warp MAP_CHAMPIONS_TOWN_DOME_TENT_LOBBY, 6, 6
+	waitstate
+
+ChampionsTown_DomeTentBattleRoom_EventScript_ReadyForSemifinal::
+	message ChampionsTown_DomeTentBattleRoom_Text_ReadyForSemifinal
+	waitmessage
+	return
+
+ChampionsTown_DomeTentBattleRoom_EventScript_ReadyForFinal::
+	message ChampionsTown_DomeTentBattleRoom_Text_ReadyForFinal
+	waitmessage
+	return
+
+ChampionsTown_DomeTentBattleRoom_EventScript_PauseChallenge::
+	message ChampionsTown_DomeTentBattleRoom_Text_SavingPleaseWait
+	waitmessage
+	championsdometent_save CHALLENGE_STATUS_PAUSED
+	playse SE_SAVE
+	waitse
+	fadescreen FADE_TO_BLACK
+	frontier_reset
+	end
+
+ChampionsTown_DomeTentBattleRoom_EventScript_ResumeChallenge::
+	applymovement LOCALID_CHAMPIONS_DOME_TENT_BATTLE_ATTENDANT, ChampionsTown_DomeTentBattleRoom_Movement_AttendantApproachPlayer
+	waitmovement 0
+	applymovement LOCALID_CHAMPIONS_DOME_TENT_BATTLE_PLAYER, ChampionsTown_DomeTentBattleRoom_Movement_PlayerFaceAttendant
+	waitmovement 0
+	goto ChampionsTown_DomeTentBattleRoom_EventScript_AskContinueChallenge
+	end
+
+ChampionsTown_DomeTentBattleRoom_Movement_PlayerEnter:
+	walk_up
+	walk_up
+	walk_up
+	walk_in_place_faster_right
+	step_end
+
+ChampionsTown_DomeTentBattleRoom_Movement_PlayerFaceBattle:
+	walk_in_place_faster_right
+	step_end
+
+ChampionsTown_DomeTentBattleRoom_Movement_PlayerFaceAttendant:
+	walk_in_place_faster_left
+	step_end
+
+ChampionsTown_DomeTentBattleRoom_Movement_OpponentEnter:
+	walk_down
+	walk_down
+	walk_down
+	walk_down
+	walk_in_place_faster_left
+	step_end
+
+ChampionsTown_DomeTentBattleRoom_Movement_OpponentExit:
+	walk_up
+	walk_up
+	walk_up
+	walk_up
+	step_end
+
+ChampionsTown_DomeTentBattleRoom_Movement_AttendantJump:
+	disable_jump_landing_ground_effect
+	jump_in_place_down
+	step_end
+
+ChampionsTown_DomeTentBattleRoom_Movement_AttendantApproachPlayer:
+	walk_down
+	walk_down
+	walk_down
+	walk_in_place_faster_right
+	step_end
+
+ChampionsTown_DomeTentBattleRoom_Movement_AttendantReturnToPos:
+	walk_up
+	walk_up
+	walk_up
+	walk_in_place_faster_down
+	step_end
+
+ChampionsTown_DomeTentBattleRoom_OnWarp:
+	map_script_2 VAR_TEMP_1, 0, ChampionsTown_DomeTentBattleRoom_EventScript_SetUpObjects
+	.2byte 0
+
+ChampionsTown_DomeTentBattleRoom_EventScript_SetUpObjects::
+	hideobjectat LOCALID_PLAYER, MAP_CHAMPIONS_TOWN_DOME_TENT_BATTLE_ROOM
+	hideobjectat LOCALID_CHAMPIONS_DOME_TENT_BATTLE_PLAYER, MAP_CHAMPIONS_TOWN_DOME_TENT_BATTLE_ROOM
+	removeobject LOCALID_CHAMPIONS_DOME_TENT_BATTLE_OPPONENT
+	setvar VAR_TEMP_1, 1
+	end
+
+ChampionsTown_DomeTentBattleRoom_Text_RoundOf8Begin:
+	.string "ROUND OF 8!\p"
+	.string "Win this match to reach the\n"
+	.string "SEMIFINAL!$"
+
+ChampionsTown_DomeTentBattleRoom_Text_SemifinalBegin:
+	.string "SEMIFINAL!\p"
+	.string "This opponent fought their way\n"
+	.string "through the other side of the\l"
+	.string "bracket to be here. Win, and it's\l"
+	.string "on to the FINAL!$"
+
+ChampionsTown_DomeTentBattleRoom_Text_FinalBegin:
+	.string "FINAL!\p"
+	.string "This is it - the last opponent\n"
+	.string "standing between you and the\l"
+	.string "CHAMPIONS DOME TENT prize!$"
+
+ChampionsTown_DomeTentBattleRoom_Text_WinnerIsPlayer:
+	.string "And the winner is… {PLAYER}!$"
+
+ChampionsTown_DomeTentBattleRoom_Text_WinnerIsOpponent:
+	.string "And the winner is… {STR_VAR_1}!$"
+
+ChampionsTown_DomeTentBattleRoom_Text_MonsWillBeRestored:
+	.string "Your POKéMON will be restored to\n"
+	.string "full health.$"
+
+ChampionsTown_DomeTentBattleRoom_Text_ReadyForSemifinal:
+	.string "Are you ready to move on to the\n"
+	.string "SEMIFINAL?$"
+
+ChampionsTown_DomeTentBattleRoom_Text_ReadyForFinal:
+	.string "Are you ready to move on to the\n"
+	.string "FINAL?$"
+
+ChampionsTown_DomeTentBattleRoom_Text_SaveAndShutDown:
+	.string "Would you like to save your progress\n"
+	.string "and take a break?$"
+
+ChampionsTown_DomeTentBattleRoom_Text_RetireFromChallenge:
+	.string "Are you sure you want to retire from\n"
+	.string "the challenge?$"
+
+ChampionsTown_DomeTentBattleRoom_Text_SavingPleaseWait:
+	.string "Saving…\n"
+	.string "Please wait.$"
+`

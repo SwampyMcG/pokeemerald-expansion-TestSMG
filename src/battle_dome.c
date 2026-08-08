@@ -2108,6 +2108,36 @@ static void InitDomeTrainers(void)
 
         for (i = 0; i < FRONTIER_PARTY_SIZE; i++)
             DOME_MONS[j][i] = GetFrontierBrainMonSpecies(i);
+
+        // Also guarantee one Frontier Leader, seeded to the other of slots 0/1 - the
+        // player's own side of the bracket, opposite the Brain - so the player can face a
+        // Leader on the way to a final against the Brain instead of only meeting them once,
+        // in the championship match. Left alone if the player earned that seed themselves.
+        {
+            int leaderSlot = 1 - j;
+
+            if (DOME_TRAINERS[leaderSlot].trainerId != TRAINER_PLAYER)
+            {
+                u16 leaderTrainerId = GetRandomFrontierLeaderTrainerId();
+                DOME_TRAINERS[leaderSlot].trainerId = leaderTrainerId;
+                for (j = 0; j < FRONTIER_PARTY_SIZE; j++)
+                {
+                    do
+                    {
+                        monId = GetRandomFrontierMonFromSet(leaderTrainerId);
+                        for (k = 0; k < j; k++)
+                        {
+                            if (DOME_MONS[leaderSlot][k] == monId
+                                || species[0] == gFacilityTrainerMons[monId].species
+                                || species[1] == gFacilityTrainerMons[monId].species)
+                                break;
+                        }
+                    } while (k != j);
+                    DOME_MONS[leaderSlot][j] = monId;
+                    species[j] = gFacilityTrainerMons[monId].species;
+                }
+            }
+        }
     }
     else
     {

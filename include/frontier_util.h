@@ -15,6 +15,7 @@ u8 GetPlayerSymbolCountForFacility(u8 facility);
 void ShowRankingHallRecordsWindow(void);
 void ScrollRankingHallRecordsWindow(void);
 void ClearRankingHallRecords(void);
+void PrintHallRecords(s32 hallFacilityId, s32 lvlMode);
 void SaveGameFrontier(void);
 enum TrainerPicID GetFrontierBrainTrainerPicIndex(void);
 enum TrainerClassID GetFrontierBrainTrainerClass(void);

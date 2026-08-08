@@ -783,6 +783,41 @@ bool32 RemovePyramidBagItem(enum Item itemId, u16 count)
     }
 }
 
+// Moves everything in the current level mode's Pyramid Bag into the player's regular Bag.
+// Used by the "claim your Adventure Bag" choice at the end of a Battle Pyramid challenge.
+// Slots that don't fit in the regular Bag (e.g. a full pocket) are left behind in the Pyramid
+// Bag rather than discarded. Sets gSpecialVar_Result to TRUE if everything was transferred.
+void TransferPyramidBagToBag(void)
+{
+    enum FrontierLevelMode lvlMode = gSaveBlock2Ptr->frontier.lvlMode;
+    u16 *items = gSaveBlock2Ptr->frontier.pyramidBag.itemId[lvlMode];
+#if MAX_PYRAMID_BAG_ITEM_CAPACITY > 255
+    u16 *quantities = gSaveBlock2Ptr->frontier.pyramidBag.quantity[lvlMode];
+#else
+    u8 *quantities = gSaveBlock2Ptr->frontier.pyramidBag.quantity[lvlMode];
+#endif
+    bool8 allTransferred = TRUE;
+    int i;
+
+    for (i = 0; i < PYRAMID_BAG_ITEMS_COUNT; i++)
+    {
+        if (items[i] != ITEM_NONE && quantities[i] != 0)
+        {
+            if (AddBagItem(items[i], quantities[i]))
+            {
+                items[i] = ITEM_NONE;
+                quantities[i] = 0;
+            }
+            else
+            {
+                allTransferred = FALSE;
+            }
+        }
+    }
+
+    gSpecialVar_Result = allTransferred;
+}
+
 static u16 SanitizeItemId(enum Item itemId)
 {
     assertf(itemId < ITEMS_COUNT, "invalid item: %d", itemId)

@@ -2253,7 +2253,12 @@ static void EndLinkBattleInSteps(void)
 
             for (i = 0; i < battlerCount && (gLinkPlayers[i].version & 0xFF) == VERSION_EMERALD; i++);
 
-            if (!gSaveBlock2Ptr->frontier.disableRecordBattle && i == battlerCount)
+            // Battle Recording prompts are retired in favor of the Facility Rankings screen -
+            // this condition (originally gating whether to ask) is forced FALSE so the "no
+            // players can record this battle, end" wrap-up path below always runs instead.
+            // Left disableRecordBattle itself untouched since link controllers sync its value
+            // between consoles as part of the link protocol.
+            if (FALSE && !gSaveBlock2Ptr->frontier.disableRecordBattle && i == battlerCount)
             {
                 if (FlagGet(FLAG_SYS_FRONTIER_PASS))
                 {

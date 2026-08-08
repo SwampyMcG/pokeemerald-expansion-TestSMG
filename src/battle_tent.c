@@ -9,11 +9,14 @@
 #include "random.h"
 #include "item.h"
 #include "battle_factory_screen.h"
+#include "battle_pike.h"
+#include "party_menu.h"
 #include "frontier_util.h"
 #include "string_util.h"
 #include "constants/battle_tent.h"
 #include "constants/battle_tent_trainers.h"
 #include "constants/battle_tent_mons.h"
+#include "constants/battle.h"
 #include "constants/items.h"
 #include "constants/layouts.h"
 #include "constants/region_map_sections.h"
@@ -45,6 +48,29 @@ static void SelectInitialRentalMons(void);
 static void SwapRentalMons(void);
 static void GenerateOpponentMons(void);
 static void GenerateInitialRentalMons(void);
+static void InitChampionsDomeTentChallenge(void);
+static void GetChampionsDomeTentPrize(void);
+static void SetChampionsDomeTentPrize(void);
+static void SaveChampionsDomeTentChallenge(void);
+static void SetRandomChampionsDomeTentPrize(void);
+static void GiveChampionsDomeTentPrize(void);
+static void GenerateChampionsDomeBracket(void);
+static void BufferChampionsDomeTentTrainerName(void);
+static void InitChampionsPikeTentChallenge(void);
+static void GetChampionsPikeTentPrize(void);
+static void SetChampionsPikeTentPrize(void);
+static void SaveChampionsPikeTentChallenge(void);
+static void SetRandomChampionsPikeTentPrize(void);
+static void GiveChampionsPikeTentPrize(void);
+static void BufferChampionsPikeTentTrainerName(void);
+static void TryChampionsPikeMysteryRoom(void);
+static void InitChampionsPyramidTentChallenge(void);
+static void GetChampionsPyramidTentPrize(void);
+static void SetChampionsPyramidTentPrize(void);
+static void SaveChampionsPyramidTentChallenge(void);
+static void SetRandomChampionsPyramidTentPrize(void);
+static void GiveChampionsPyramidTentPrize(void);
+static void BufferChampionsPyramidTentTrainerName(void);
 
 /*
  * Battle Tents are mini versions of particular Battle Frontier facilities
@@ -100,6 +126,52 @@ void static (*const sSlateportTentFuncs[])(void) =
 };
 
 static const u16 sSlateportTentRewards[] = {ITEM_FULL_HEAL};
+
+void static (*const sChampionsDomeTentFuncs[])(void) =
+{
+    [CHAMPIONS_DOME_TENT_FUNC_INIT]              = InitChampionsDomeTentChallenge,
+    [CHAMPIONS_DOME_TENT_FUNC_GET_PRIZE]         = GetChampionsDomeTentPrize,
+    [CHAMPIONS_DOME_TENT_FUNC_SET_PRIZE]         = SetChampionsDomeTentPrize,
+    [CHAMPIONS_DOME_TENT_FUNC_SAVE]              = SaveChampionsDomeTentChallenge,
+    [CHAMPIONS_DOME_TENT_FUNC_SET_RANDOM_PRIZE]  = SetRandomChampionsDomeTentPrize,
+    [CHAMPIONS_DOME_TENT_FUNC_GIVE_PRIZE]        = GiveChampionsDomeTentPrize,
+    [CHAMPIONS_DOME_TENT_FUNC_GENERATE_BRACKET]  = GenerateChampionsDomeBracket,
+    [CHAMPIONS_DOME_TENT_FUNC_GET_OPPONENT_NAME] = BufferChampionsDomeTentTrainerName
+};
+
+static const u16 sChampionsDomeTentRewards[] = {ITEM_WIDE_LENS};
+
+void static (*const sChampionsPikeTentFuncs[])(void) =
+{
+    [CHAMPIONS_PIKE_TENT_FUNC_INIT]              = InitChampionsPikeTentChallenge,
+    [CHAMPIONS_PIKE_TENT_FUNC_GET_PRIZE]         = GetChampionsPikeTentPrize,
+    [CHAMPIONS_PIKE_TENT_FUNC_SET_PRIZE]         = SetChampionsPikeTentPrize,
+    [CHAMPIONS_PIKE_TENT_FUNC_SAVE]              = SaveChampionsPikeTentChallenge,
+    [CHAMPIONS_PIKE_TENT_FUNC_SET_RANDOM_PRIZE]  = SetRandomChampionsPikeTentPrize,
+    [CHAMPIONS_PIKE_TENT_FUNC_GIVE_PRIZE]        = GiveChampionsPikeTentPrize,
+    [CHAMPIONS_PIKE_TENT_FUNC_GET_OPPONENT_NAME] = BufferChampionsPikeTentTrainerName,
+    [CHAMPIONS_PIKE_TENT_FUNC_TRY_MYSTERY_ROOM]  = TryChampionsPikeMysteryRoom
+};
+
+static const u16 sChampionsPikeTentRewards[] = {ITEM_LUM_BERRY};
+
+// Status order here must line up with CHAMPIONS_PIKE_MYSTERY_CURSE_POISON..SLEEP
+static const u16 sChampionsPikeCurseStatuses[] = {STATUS1_POISON, STATUS1_PARALYSIS, STATUS1_BURN, STATUS1_SLEEP};
+
+static const u16 sChampionsPikeTreasureItems[] = {ITEM_GREAT_BALL, ITEM_HYPER_POTION, ITEM_FULL_HEAL, ITEM_REVIVE, ITEM_NUGGET};
+
+void static (*const sChampionsPyramidTentFuncs[])(void) =
+{
+    [CHAMPIONS_PYRAMID_TENT_FUNC_INIT]              = InitChampionsPyramidTentChallenge,
+    [CHAMPIONS_PYRAMID_TENT_FUNC_GET_PRIZE]         = GetChampionsPyramidTentPrize,
+    [CHAMPIONS_PYRAMID_TENT_FUNC_SET_PRIZE]         = SetChampionsPyramidTentPrize,
+    [CHAMPIONS_PYRAMID_TENT_FUNC_SAVE]              = SaveChampionsPyramidTentChallenge,
+    [CHAMPIONS_PYRAMID_TENT_FUNC_SET_RANDOM_PRIZE]  = SetRandomChampionsPyramidTentPrize,
+    [CHAMPIONS_PYRAMID_TENT_FUNC_GIVE_PRIZE]        = GiveChampionsPyramidTentPrize,
+    [CHAMPIONS_PYRAMID_TENT_FUNC_GET_OPPONENT_NAME] = BufferChampionsPyramidTentTrainerName
+};
+
+static const u16 sChampionsPyramidTentRewards[] = {ITEM_ESCAPE_ROPE};
 
 // code
 void CallVerdanturfTentFunction(void)
@@ -426,4 +498,270 @@ static void GenerateOpponentMons(void)
         gFrontierTempParty[i] = sRandMonId;
         i++;
     }
+}
+
+// Champions Dome Tent
+
+void CallChampionsDomeTentFunction(void)
+{
+    sChampionsDomeTentFuncs[gSpecialVar_0x8004]();
+}
+
+static void InitChampionsDomeTentChallenge(void)
+{
+    gSaveBlock2Ptr->frontier.challengeStatus = 0;
+    gSaveBlock2Ptr->frontier.curChallengeBattleNum = 0;
+    gSaveBlock2Ptr->frontier.challengePaused = FALSE;
+    SetDynamicWarp(0, gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum, WARP_ID_NONE);
+}
+
+static void GetChampionsDomeTentPrize(void)
+{
+    gSpecialVar_Result = gSaveBlock2Ptr->frontier.championsDomeTentPrize;
+}
+
+static void SetChampionsDomeTentPrize(void)
+{
+    gSaveBlock2Ptr->frontier.championsDomeTentPrize = gSpecialVar_0x8006;
+}
+
+static void SaveChampionsDomeTentChallenge(void)
+{
+    ClearEnemyPartyAfterChallenge();
+    gSaveBlock2Ptr->frontier.challengeStatus = gSpecialVar_0x8005;
+    VarSet(VAR_TEMP_CHALLENGE_STATUS, 0);
+    gSaveBlock2Ptr->frontier.challengePaused = TRUE;
+    SaveGameFrontier();
+}
+
+static void SetRandomChampionsDomeTentPrize(void)
+{
+    gSaveBlock2Ptr->frontier.championsDomeTentPrize = sChampionsDomeTentRewards[Random() % ARRAY_COUNT(sChampionsDomeTentRewards)];
+}
+
+static void GiveChampionsDomeTentPrize(void)
+{
+    if (AddBagItem(gSaveBlock2Ptr->frontier.championsDomeTentPrize, 1) == TRUE)
+    {
+        CopyItemName(gSaveBlock2Ptr->frontier.championsDomeTentPrize, gStringVar1);
+        gSaveBlock2Ptr->frontier.championsDomeTentPrize = ITEM_NONE;
+        gSpecialVar_Result = TRUE;
+    }
+    else
+    {
+        gSpecialVar_Result = FALSE;
+    }
+}
+
+// Rolls an 8-slot single-elimination bracket (Round of 8 -> Semifinal -> Final) and records the
+// player's 3 opponents in trainerIds[0..2]. The other 6 competitors are eliminated off-screen by
+// simple coin flips - nothing the player does can affect them. This just gives the Semifinal and
+// Final a named opponent who "earned" their spot instead of a fresh random pick out of nowhere.
+static void GenerateChampionsDomeBracket(void)
+{
+    u16 pool[CHAMPIONS_DOME_BRACKET_SIZE - 1]; // Every bracket slot except the player's own
+    int i, j;
+    u16 semiLeftWinner, semiRightWinner;
+
+    gFacilityTrainers = gVerdanturfBattleTentTrainers;
+    gFacilityTrainerMons = gVerdanturfBattleTentMons;
+
+    for (i = 0; i < CHAMPIONS_DOME_BRACKET_SIZE - 1; i++)
+    {
+        u16 trainerId;
+        do
+        {
+            trainerId = Random() % NUM_BATTLE_TENT_TRAINERS;
+            for (j = 0; j < i; j++)
+            {
+                if (pool[j] == trainerId)
+                    break;
+            }
+        } while (j != i);
+        pool[i] = trainerId;
+    }
+
+    // pool[0] is the Round of 8 opponent, faced directly.
+    // pool[1] and pool[2] fight off-screen for the Semifinal opponent slot.
+    // pool[3..6] fight off-screen (two matches, then a mini semifinal of their own) for the Final opponent slot.
+    gSaveBlock2Ptr->frontier.trainerIds[0] = pool[0];
+    gSaveBlock2Ptr->frontier.trainerIds[1] = (Random() % 2) ? pool[1] : pool[2];
+
+    semiLeftWinner = (Random() % 2) ? pool[3] : pool[4];
+    semiRightWinner = (Random() % 2) ? pool[5] : pool[6];
+    gSaveBlock2Ptr->frontier.trainerIds[2] = (Random() % 2) ? semiLeftWinner : semiRightWinner;
+}
+
+static void BufferChampionsDomeTentTrainerName(void)
+{
+    GetFrontierTrainerName(gStringVar1, TRAINER_BATTLE_PARAM.opponentA);
+}
+
+// Champions Pike Tent
+
+void CallChampionsPikeTentFunction(void)
+{
+    sChampionsPikeTentFuncs[gSpecialVar_0x8004]();
+}
+
+static void InitChampionsPikeTentChallenge(void)
+{
+    gSaveBlock2Ptr->frontier.challengeStatus = 0;
+    gSaveBlock2Ptr->frontier.curChallengeBattleNum = 0;
+    gSaveBlock2Ptr->frontier.challengePaused = FALSE;
+    SetDynamicWarp(0, gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum, WARP_ID_NONE);
+}
+
+static void GetChampionsPikeTentPrize(void)
+{
+    gSpecialVar_Result = gSaveBlock2Ptr->frontier.championsPikeTentPrize;
+}
+
+static void SetChampionsPikeTentPrize(void)
+{
+    gSaveBlock2Ptr->frontier.championsPikeTentPrize = gSpecialVar_0x8006;
+}
+
+static void SaveChampionsPikeTentChallenge(void)
+{
+    ClearEnemyPartyAfterChallenge();
+    gSaveBlock2Ptr->frontier.challengeStatus = gSpecialVar_0x8005;
+    VarSet(VAR_TEMP_CHALLENGE_STATUS, 0);
+    gSaveBlock2Ptr->frontier.challengePaused = TRUE;
+    SaveGameFrontier();
+}
+
+static void SetRandomChampionsPikeTentPrize(void)
+{
+    gSaveBlock2Ptr->frontier.championsPikeTentPrize = sChampionsPikeTentRewards[Random() % ARRAY_COUNT(sChampionsPikeTentRewards)];
+}
+
+static void GiveChampionsPikeTentPrize(void)
+{
+    if (AddBagItem(gSaveBlock2Ptr->frontier.championsPikeTentPrize, 1) == TRUE)
+    {
+        CopyItemName(gSaveBlock2Ptr->frontier.championsPikeTentPrize, gStringVar1);
+        gSaveBlock2Ptr->frontier.championsPikeTentPrize = ITEM_NONE;
+        gSpecialVar_Result = TRUE;
+    }
+    else
+    {
+        gSpecialVar_Result = FALSE;
+    }
+}
+
+static void BufferChampionsPikeTentTrainerName(void)
+{
+    GetFrontierTrainerName(gStringVar1, TRAINER_BATTLE_PARAM.opponentA);
+}
+
+// Replaces the 2nd of the Tent's 3 stages. A coin flip between a mild status curse (borrowed
+// from the real Pike's status rooms) and a small treasure find, borrowed from the same idea in
+// spirit but kept simple - no battle, no room-type engine, just one flavor event.
+static void TryChampionsPikeMysteryRoom(void)
+{
+    if (Random() % 2 == 0)
+    {
+        u8 i;
+        struct Pokemon *mon = NULL;
+        u8 statusIndex = Random() % ARRAY_COUNT(sChampionsPikeCurseStatuses);
+        u32 status = sChampionsPikeCurseStatuses[statusIndex];
+
+        for (i = 0; i < FRONTIER_PARTY_SIZE; i++)
+        {
+            struct Pokemon *candidate = &gParties[B_TRAINER_PLAYER][i];
+            enum Species species = GetMonData(candidate, MON_DATA_SPECIES);
+
+            if (GetMonData(candidate, MON_DATA_HP) != 0
+                && GetAilmentFromStatus(GetMonData(candidate, MON_DATA_STATUS)) == AILMENT_NONE
+                && !DoesTypePreventStatus(species, status)
+                && !DoesAbilityPreventStatus(candidate, status))
+            {
+                mon = candidate;
+                break;
+            }
+        }
+
+        if (mon == NULL)
+        {
+            gSpecialVar_Result = CHAMPIONS_PIKE_MYSTERY_NOTHING;
+            return;
+        }
+
+        SetMonData(mon, MON_DATA_STATUS, &status);
+        GetMonData(mon, MON_DATA_NICKNAME, gStringVar1);
+        gSpecialVar_Result = CHAMPIONS_PIKE_MYSTERY_CURSE_POISON + statusIndex;
+    }
+    else
+    {
+        u16 item = sChampionsPikeTreasureItems[Random() % ARRAY_COUNT(sChampionsPikeTreasureItems)];
+
+        if (AddBagItem(item, 1) == TRUE)
+        {
+            CopyItemName(item, gStringVar1);
+            gSpecialVar_Result = CHAMPIONS_PIKE_MYSTERY_TREASURE;
+        }
+        else
+        {
+            gSpecialVar_Result = CHAMPIONS_PIKE_MYSTERY_NOTHING;
+        }
+    }
+}
+
+// Champions Pyramid Tent
+
+void CallChampionsPyramidTentFunction(void)
+{
+    sChampionsPyramidTentFuncs[gSpecialVar_0x8004]();
+}
+
+static void InitChampionsPyramidTentChallenge(void)
+{
+    gSaveBlock2Ptr->frontier.challengeStatus = 0;
+    gSaveBlock2Ptr->frontier.curChallengeBattleNum = 0;
+    gSaveBlock2Ptr->frontier.challengePaused = FALSE;
+    SetDynamicWarp(0, gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum, WARP_ID_NONE);
+}
+
+static void GetChampionsPyramidTentPrize(void)
+{
+    gSpecialVar_Result = gSaveBlock2Ptr->frontier.championsPyramidTentPrize;
+}
+
+static void SetChampionsPyramidTentPrize(void)
+{
+    gSaveBlock2Ptr->frontier.championsPyramidTentPrize = gSpecialVar_0x8006;
+}
+
+static void SaveChampionsPyramidTentChallenge(void)
+{
+    ClearEnemyPartyAfterChallenge();
+    gSaveBlock2Ptr->frontier.challengeStatus = gSpecialVar_0x8005;
+    VarSet(VAR_TEMP_CHALLENGE_STATUS, 0);
+    gSaveBlock2Ptr->frontier.challengePaused = TRUE;
+    SaveGameFrontier();
+}
+
+static void SetRandomChampionsPyramidTentPrize(void)
+{
+    gSaveBlock2Ptr->frontier.championsPyramidTentPrize = sChampionsPyramidTentRewards[Random() % ARRAY_COUNT(sChampionsPyramidTentRewards)];
+}
+
+static void GiveChampionsPyramidTentPrize(void)
+{
+    if (AddBagItem(gSaveBlock2Ptr->frontier.championsPyramidTentPrize, 1) == TRUE)
+    {
+        CopyItemName(gSaveBlock2Ptr->frontier.championsPyramidTentPrize, gStringVar1);
+        gSaveBlock2Ptr->frontier.championsPyramidTentPrize = ITEM_NONE;
+        gSpecialVar_Result = TRUE;
+    }
+    else
+    {
+        gSpecialVar_Result = FALSE;
+    }
+}
+
+static void BufferChampionsPyramidTentTrainerName(void)
+{
+    GetFrontierTrainerName(gStringVar1, TRAINER_BATTLE_PARAM.opponentA);
 }

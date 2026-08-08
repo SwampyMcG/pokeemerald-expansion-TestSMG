@@ -342,81 +342,30 @@ static const u16 sPickupItemsLvlOpen[TOTAL_PYRAMID_ROUNDS][PICKUP_ITEMS_PER_ROUN
     {ITEM_HYPER_POTION, ITEM_X_DEFENSE, ITEM_LUM_BERRY, ITEM_ETHER, ITEM_LEPPA_BERRY, ITEM_REVIVE, ITEM_QUICK_CLAW, ITEM_KINGS_ROCK, ITEM_FULL_RESTORE, ITEM_MAX_ELIXIR},
 };
 
-static const u8 sPickupItemSlots[][2] =
+// Floor-scattered treasure, tiered by how deep into the challenge the floor is (independent of
+// win streak/round) rather than the round-scaled sPickupItemsLvlOpen/50 tables above, which are
+// reserved for the Pickup-ability item roll (see GetBattlePyramidPickupItemId).
+static const u16 sPyramidFloorTreasureTier1[] = // Floors 1-2: common balls, basic healing
 {
-    // Floor 0
-    { 31, 0},
-    { 46, 1},
-    { 61, 2},
-    { 71, 3},
-    { 81, 4},
-    { 91, 5},
-    { 94, 6},
-    { 97, 7},
-    {100, 8},
-    // Floor 1
-    { 15, 0},
-    { 46, 1},
-    { 61, 2},
-    { 71, 3},
-    { 81, 4},
-    { 91, 5},
-    { 94, 6},
-    { 97, 8},
-    {100, 9},
-    // Floor 2
-    { 15, 0},
-    { 30, 1},
-    { 61, 2},
-    { 71, 3},
-    { 81, 4},
-    { 91, 5},
-    { 94, 6},
-    { 97, 7},
-    {100, 8},
-    // Floor 3
-    { 28, 0},
-    { 43, 1},
-    { 58, 2},
-    { 68, 3},
-    { 78, 4},
-    { 88, 5},
-    { 92, 7},
-    { 96, 8},
-    {100, 9},
-    // Floor 4
-    { 15, 0},
-    { 43, 1},
-    { 58, 2},
-    { 68, 3},
-    { 78, 4},
-    { 88, 5},
-    { 92, 6},
-    { 96, 7},
-    {100, 9},
-    // Floor 5
-    { 15, 0},
-    { 30, 1},
-    { 58, 2},
-    { 68, 3},
-    { 78, 4},
-    { 88, 5},
-    { 92, 6},
-    { 96, 7},
-    {100, 8},
-    // Floor 6
-    { 28, 0},
-    { 43, 1},
-    { 58, 2},
-    { 68, 3},
-    { 78, 4},
-    { 88, 5},
-    { 92, 6},
-    { 96, 8},
-    {100, 9},
+    ITEM_POKE_BALL, ITEM_GREAT_BALL, ITEM_POTION, ITEM_SUPER_POTION,
+    ITEM_ANTIDOTE, ITEM_PARALYZE_HEAL, ITEM_AWAKENING, ITEM_ETHER,
 };
 
-static const u8 sPickupItemOffsets[FRONTIER_STAGES_PER_CHALLENGE] = {0, 9, 18, 27, 36, 45, 54};
+static const u16 sPyramidFloorTreasureTier2[] = // Floors 3-4: better balls, better healing, monetary
+{
+    ITEM_ULTRA_BALL, ITEM_TIMER_BALL, ITEM_HYPER_POTION, ITEM_FULL_HEAL,
+    ITEM_REVIVE, ITEM_ELIXIR, ITEM_NUGGET, ITEM_PEARL, ITEM_BIG_PEARL,
+};
+
+static const u16 sPyramidFloorTreasureTier3[] = // Floors 5-7: Terra Shards, stat berries, high-value treasure
+{
+    ITEM_NORMAL_TERA_SHARD, ITEM_FIRE_TERA_SHARD, ITEM_WATER_TERA_SHARD, ITEM_GRASS_TERA_SHARD,
+    ITEM_ELECTRIC_TERA_SHARD, ITEM_PSYCHIC_TERA_SHARD, ITEM_DRAGON_TERA_SHARD,
+    ITEM_LIECHI_BERRY, ITEM_GANLON_BERRY, ITEM_SALAC_BERRY, ITEM_PETAYA_BERRY,
+    ITEM_APICOT_BERRY, ITEM_LANSAT_BERRY, ITEM_STARF_BERRY,
+    ITEM_COMET_SHARD, ITEM_STAR_PIECE, ITEM_MAX_REVIVE, ITEM_FULL_RESTORE,
+    ITEM_PP_MAX, ITEM_ABILITY_CAPSULE,
+};
 
 static const struct PyramidTrainerEncounterMusic sTrainerClassEncounterMusic[54] =
 {
@@ -817,6 +766,39 @@ static void (*const sBattlePyramidFunctions[])(void) =
 static const u16 sShortStreakRewardItems[] = {ITEM_HP_UP, ITEM_PROTEIN, ITEM_IRON, ITEM_CALCIUM, ITEM_CARBOS, ITEM_ZINC};
 static const u16 sLongStreakRewardItems[] = {ITEM_BRIGHT_POWDER, ITEM_WHITE_HERB, ITEM_QUICK_CLAW, ITEM_LEFTOVERS, ITEM_MENTAL_HERB, ITEM_KINGS_ROCK, ITEM_FOCUS_BAND, ITEM_SCOPE_LENS, ITEM_CHOICE_BAND};
 
+// Rare "guardian" encounters - a small chance to replace the regular per-round wild mon roll.
+// The odds are derived deterministically from the floor seed/round/tier rather than a fresh
+// Random() call, since GenerateBattlePyramidWildMon can run twice for the same encounter under
+// WE_OWE (once to spawn the overworld sprite, once at battle start) and must agree both times.
+// Lvl 50 challenge: strong pseudo-legendary-caliber Pokemon.
+static const struct PyramidWildMon sPyramidBossMons50[] =
+{
+    {.species = SPECIES_TYRANITAR, .lvl = 50, .abilityNum = ABILITY_RANDOM, .moves = {MOVE_ROCK_SLIDE, MOVE_CRUNCH, MOVE_EARTHQUAKE, MOVE_DRAGON_DANCE}},
+    {.species = SPECIES_SALAMENCE, .lvl = 50, .abilityNum = ABILITY_RANDOM, .moves = {MOVE_DRAGON_CLAW, MOVE_FLY, MOVE_FIRE_BLAST, MOVE_DRAGON_DANCE}},
+    {.species = SPECIES_METAGROSS, .lvl = 50, .abilityNum = ABILITY_RANDOM, .moves = {MOVE_METEOR_MASH, MOVE_EARTHQUAKE, MOVE_PSYCHIC, MOVE_AGILITY}},
+    {.species = SPECIES_DRAGONITE, .lvl = 50, .abilityNum = ABILITY_RANDOM, .moves = {MOVE_OUTRAGE, MOVE_EARTHQUAKE, MOVE_FIRE_PUNCH, MOVE_EXTREME_SPEED}},
+    {.species = SPECIES_AGGRON, .lvl = 50, .abilityNum = ABILITY_RANDOM, .moves = {MOVE_HEAVY_SLAM, MOVE_EARTHQUAKE, MOVE_STONE_EDGE, MOVE_IRON_HEAD}},
+};
+
+// Open Level challenge: the Regi legendaries, minus Regigigas (a step above the rest even among legendaries).
+static const struct PyramidWildMon sPyramidBossMonsOpen[] =
+{
+    {.species = SPECIES_REGIROCK,   .lvl = 2, .abilityNum = ABILITY_RANDOM, .moves = {MOVE_STONE_EDGE, MOVE_EARTHQUAKE, MOVE_HAMMER_ARM, MOVE_STEALTH_ROCK}},
+    {.species = SPECIES_REGICE,     .lvl = 2, .abilityNum = ABILITY_RANDOM, .moves = {MOVE_ICE_BEAM, MOVE_THUNDERBOLT, MOVE_FOCUS_BLAST, MOVE_AMNESIA}},
+    {.species = SPECIES_REGISTEEL,  .lvl = 2, .abilityNum = ABILITY_RANDOM, .moves = {MOVE_IRON_HEAD, MOVE_EARTHQUAKE, MOVE_AMNESIA, MOVE_THUNDER_WAVE}},
+    {.species = SPECIES_REGIELEKI,  .lvl = 2, .abilityNum = ABILITY_RANDOM, .moves = {MOVE_THUNDERBOLT, MOVE_VOLT_SWITCH, MOVE_RAPID_SPIN, MOVE_THUNDER_WAVE}},
+    {.species = SPECIES_REGIDRAGO,  .lvl = 2, .abilityNum = ABILITY_RANDOM, .moves = {MOVE_DRAGON_ENERGY, MOVE_BODY_SLAM, MOVE_DRAGON_DANCE, MOVE_EARTHQUAKE}},
+};
+
+static const struct PyramidWildMon *const sPyramidBossMons[2] =
+{
+    [FRONTIER_LVL_50]   = sPyramidBossMons50,
+    [FRONTIER_LVL_OPEN] = sPyramidBossMonsOpen,
+};
+
+#define PYRAMID_BOSS_MON_ODDS 20 // 1-in-20 chance of a boss instead of the regular per-round pool
+#define NUM_PYRAMID_BOSS_MONS 5  // sPyramidBossMons50 and sPyramidBossMonsOpen must each have this many entries
+
 static const u8 sBorderedSquareIds[][4] =
 {
     {1,   4, -1, -1},
@@ -988,12 +970,25 @@ static void SetPickupItem(void)
     u32 randSeedIndex, randSeed;
     u8 id;
     rng_value_t rand;
-    enum FrontierLevelMode lvlMode = gSaveBlock2Ptr->frontier.lvlMode;
     u32 floor = gSaveBlock2Ptr->frontier.curChallengeBattleNum;
-    u32 round = (gSaveBlock2Ptr->frontier.pyramidWinStreaks[lvlMode] / FRONTIER_STAGES_PER_CHALLENGE) % TOTAL_PYRAMID_ROUNDS;
+    const u16 *pool;
+    u32 poolSize;
 
-    if (round >= TOTAL_PYRAMID_ROUNDS)
-        round = TOTAL_PYRAMID_ROUNDS - 1;
+    if (floor <= 1)
+    {
+        pool = sPyramidFloorTreasureTier1;
+        poolSize = ARRAY_COUNT(sPyramidFloorTreasureTier1);
+    }
+    else if (floor <= 3)
+    {
+        pool = sPyramidFloorTreasureTier2;
+        poolSize = ARRAY_COUNT(sPyramidFloorTreasureTier2);
+    }
+    else
+    {
+        pool = sPyramidFloorTreasureTier3;
+        poolSize = ARRAY_COUNT(sPyramidFloorTreasureTier3);
+    }
 
     id = GetPyramidFloorTemplateId();
     itemIndex = (gSpecialVar_LastTalked - sPyramidFloorTemplates[id].numTrainers) - 1;
@@ -1005,18 +1000,8 @@ static void SetPickupItem(void)
     for (i = 0; i < itemIndex / 2; i++)
         LocalRandom(&rand);
 
-    randVal = LocalRandom(&rand) % 100;
-
-    for (i = sPickupItemOffsets[floor]; i < ARRAY_COUNT(sPickupItemSlots); i++)
-    {
-        if (randVal < sPickupItemSlots[i][0])
-            break;
-    }
-
-    if (lvlMode != FRONTIER_LVL_50)
-        gSpecialVar_0x8000 = sPickupItemsLvlOpen[round][sPickupItemSlots[i][1]];
-    else
-        gSpecialVar_0x8000 = sPickupItemsLvl50[round][sPickupItemSlots[i][1]];
+    randVal = LocalRandom(&rand);
+    gSpecialVar_0x8000 = pool[randVal % poolSize];
 
     // Quantity of item to give
     gSpecialVar_0x8001 = 1;
@@ -1573,8 +1558,12 @@ void GenerateBattlePyramidWildMon(enum Species forceSpecies)
     u8 name[POKEMON_NAME_LENGTH + 1];
     int i;
     const struct PyramidWildMon *wildMons;
+    const struct PyramidWildMon *chosenMon;
     u32 id;
-    enum FrontierLevelMode lvl = gSaveBlock2Ptr->frontier.lvlMode;
+    bool8 isBoss;
+    u32 bossSeed;
+    enum FrontierLevelMode lvlMode = gSaveBlock2Ptr->frontier.lvlMode;
+    enum FrontierLevelMode lvl = lvlMode;
     u16 round = (gSaveBlock2Ptr->frontier.pyramidWinStreaks[lvl] / FRONTIER_STAGES_PER_CHALLENGE) % TOTAL_PYRAMID_ROUNDS;
 
     if (round >= TOTAL_PYRAMID_ROUNDS)
@@ -1586,32 +1575,39 @@ void GenerateBattlePyramidWildMon(enum Species forceSpecies)
         wildMons = sLevel50WildMonPointers[round];
 
     id = GetMonData(&gParties[B_TRAINER_OPPONENT_A][0], MON_DATA_SPECIES) - 1;
-    SetMonData(&gParties[B_TRAINER_OPPONENT_A][0], MON_DATA_SPECIES, &wildMons[id].species);
-    StringCopy(name, GetSpeciesName(wildMons[id].species));
+
+    // Deterministic per (floor seed, round, tier) so a WE_OWE spawn call and its matching
+    // battle-start call always agree on whether this encounter is a boss.
+    bossSeed = gSaveBlock2Ptr->frontier.pyramidRandoms[2] + (round * 17) + (id * 7);
+    isBoss = ((bossSeed % PYRAMID_BOSS_MON_ODDS) == 0);
+    chosenMon = isBoss ? &sPyramidBossMons[lvlMode][(bossSeed / PYRAMID_BOSS_MON_ODDS) % NUM_PYRAMID_BOSS_MONS] : &wildMons[id];
+
+    SetMonData(&gParties[B_TRAINER_OPPONENT_A][0], MON_DATA_SPECIES, &chosenMon->species);
+    StringCopy(name, GetSpeciesName(chosenMon->species));
     SetMonData(&gParties[B_TRAINER_OPPONENT_A][0], MON_DATA_NICKNAME, &name);
     if (lvl != FRONTIER_LVL_50)
     {
         lvl = SetFacilityPtrsGetLevel();
-        lvl -= wildMons[id].lvl;
+        lvl -= chosenMon->lvl;
         lvl = lvl - 5 + (Random() % 11);
     }
     else
     {
-        lvl = wildMons[id].lvl - 5 + ((Random() % 11));
+        lvl = chosenMon->lvl - 5 + ((Random() % 11));
     }
     SetMonData(&gParties[B_TRAINER_OPPONENT_A][0],
                MON_DATA_EXP,
-               &gExperienceTables[gSpeciesInfo[wildMons[id].species].growthRate][lvl]);
+               &gExperienceTables[gSpeciesInfo[chosenMon->species].growthRate][lvl]);
 
-    switch (wildMons[id].abilityNum)
+    switch (chosenMon->abilityNum)
     {
     case 0:
     case 1:
-        SetMonData(&gParties[B_TRAINER_OPPONENT_A][0], MON_DATA_ABILITY_NUM, &wildMons[id].abilityNum);
+        SetMonData(&gParties[B_TRAINER_OPPONENT_A][0], MON_DATA_ABILITY_NUM, &chosenMon->abilityNum);
         break;
     case ABILITY_RANDOM:
     default:
-        if (GetSpeciesAbility(wildMons[id].species, 1))
+        if (GetSpeciesAbility(chosenMon->species, 1))
         {
             i = GetMonData(&gParties[B_TRAINER_OPPONENT_A][0], MON_DATA_PERSONALITY) % 2;
             SetMonData(&gParties[B_TRAINER_OPPONENT_A][0], MON_DATA_ABILITY_NUM, &i);
@@ -1625,13 +1621,13 @@ void GenerateBattlePyramidWildMon(enum Species forceSpecies)
     }
 
     for (i = 0; i < MAX_MON_MOVES; i++)
-        SetMonMoveSlot(&gParties[B_TRAINER_OPPONENT_A][0], wildMons[id].moves[i], i);
+        SetMonMoveSlot(&gParties[B_TRAINER_OPPONENT_A][0], chosenMon->moves[i], i);
 
     // UB: Reading outside the array as lvl was used for mon level instead of frontier lvl mode.
     #ifndef UBFIX
-    if (gSaveBlock2Ptr->frontier.pyramidWinStreaks[lvl] >= 140)
+    if (isBoss || gSaveBlock2Ptr->frontier.pyramidWinStreaks[lvl] >= 140)
     #else
-    if (gSaveBlock2Ptr->frontier.pyramidWinStreaks[gSaveBlock2Ptr->frontier.lvlMode] >= 140)
+    if (isBoss || gSaveBlock2Ptr->frontier.pyramidWinStreaks[gSaveBlock2Ptr->frontier.lvlMode] >= 140)
     #endif
     {
         id = (Random() % 17) + 15;
@@ -1720,6 +1716,13 @@ static u16 GetUniqueTrainerId(u8 objectEventId)
     enum FrontierLevelMode lvlMode = gSaveBlock2Ptr->frontier.lvlMode;
     u32 challengeNum = gSaveBlock2Ptr->frontier.pyramidWinStreaks[lvlMode] / FRONTIER_STAGES_PER_CHALLENGE;
     u32 floor = gSaveBlock2Ptr->frontier.curChallengeBattleNum;
+
+    // Guarantee a Frontier Leader as the first trainer encountered on the final maze floor,
+    // giving the Pyramid parity with the other facilities' round-7 Leader slot. This also
+    // activates the Leader Bottle Cap reward path already wired in the lobby script.
+    if (floor == FRONTIER_STAGES_PER_CHALLENGE - 1 && objectEventId == 0)
+        return GetRandomFrontierLeaderTrainerId();
+
     if (floor == FRONTIER_STAGES_PER_CHALLENGE)
     {
         do

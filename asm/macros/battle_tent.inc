@@ -165,3 +165,135 @@
 	special CallSlateportTentFunction
 	.endm
 
+
+@ Champions Dome Tent
+
+	@ Initialize the Champions Dome Tent challenge
+	.macro championsdometent_init
+	setvar VAR_0x8004, CHAMPIONS_DOME_TENT_FUNC_INIT
+	special CallChampionsDomeTentFunction
+	.endm
+
+	@ Get the current prize item id
+	.macro championsdometent_getprize
+	setvar VAR_0x8004, CHAMPIONS_DOME_TENT_FUNC_GET_PRIZE
+	special CallChampionsDomeTentFunction
+	.endm
+
+	@ Save the game and set the challenge status
+	.macro championsdometent_save challengeStatus:req
+	setvar VAR_0x8004, CHAMPIONS_DOME_TENT_FUNC_SAVE
+	setvar VAR_0x8005, \challengeStatus
+	special CallChampionsDomeTentFunction
+	.endm
+
+	@ Set the prize item as randomly selected from a list. Randomness unnecessary, as the list is only 1 item
+	.macro championsdometent_setrandomprize
+	setvar VAR_0x8004, CHAMPIONS_DOME_TENT_FUNC_SET_RANDOM_PRIZE
+	special CallChampionsDomeTentFunction
+	.endm
+
+	@ Give the current prize item. FALSE if no room for prize
+	.macro championsdometent_giveprize
+	setvar VAR_0x8004, CHAMPIONS_DOME_TENT_FUNC_GIVE_PRIZE
+	special CallChampionsDomeTentFunction
+	.endm
+
+	@ Roll the 8-slot mini bracket and record the player's Round of 8/Semifinal/Final opponents
+	.macro championsdometent_generatebracket
+	setvar VAR_0x8004, CHAMPIONS_DOME_TENT_FUNC_GENERATE_BRACKET
+	special CallChampionsDomeTentFunction
+	.endm
+
+	@ Buffer the opponent trainer's name to STR_VAR_1
+	.macro championsdometent_getopponentname
+	setvar VAR_0x8004, CHAMPIONS_DOME_TENT_FUNC_GET_OPPONENT_NAME
+	special CallChampionsDomeTentFunction
+	.endm
+
+
+@ Champions Pike Tent
+
+	@ Initialize the Champions Pike Tent challenge
+	.macro championspiketent_init
+	setvar VAR_0x8004, CHAMPIONS_PIKE_TENT_FUNC_INIT
+	special CallChampionsPikeTentFunction
+	.endm
+
+	@ Get the current prize item id
+	.macro championspiketent_getprize
+	setvar VAR_0x8004, CHAMPIONS_PIKE_TENT_FUNC_GET_PRIZE
+	special CallChampionsPikeTentFunction
+	.endm
+
+	@ Save the game and set the challenge status
+	.macro championspiketent_save challengeStatus:req
+	setvar VAR_0x8004, CHAMPIONS_PIKE_TENT_FUNC_SAVE
+	setvar VAR_0x8005, \challengeStatus
+	special CallChampionsPikeTentFunction
+	.endm
+
+	@ Set the prize item as randomly selected from a list. Randomness unnecessary, as the list is only 1 item
+	.macro championspiketent_setrandomprize
+	setvar VAR_0x8004, CHAMPIONS_PIKE_TENT_FUNC_SET_RANDOM_PRIZE
+	special CallChampionsPikeTentFunction
+	.endm
+
+	@ Give the current prize item. FALSE if no room for prize
+	.macro championspiketent_giveprize
+	setvar VAR_0x8004, CHAMPIONS_PIKE_TENT_FUNC_GIVE_PRIZE
+	special CallChampionsPikeTentFunction
+	.endm
+
+	@ Buffer the opponent trainer's name to STR_VAR_1
+	.macro championspiketent_getopponentname
+	setvar VAR_0x8004, CHAMPIONS_PIKE_TENT_FUNC_GET_OPPONENT_NAME
+	special CallChampionsPikeTentFunction
+	.endm
+
+	@ Roll the curse-or-treasure mystery room that replaces the 2nd battle. Result in VAR_RESULT (CHAMPIONS_PIKE_MYSTERY_*)
+	.macro championspiketent_trymysteryroom
+	setvar VAR_0x8004, CHAMPIONS_PIKE_TENT_FUNC_TRY_MYSTERY_ROOM
+	special CallChampionsPikeTentFunction
+	.endm
+
+
+@ Champions Pyramid Tent
+
+	@ Initialize the Champions Pyramid Tent challenge
+	.macro championspyramidtent_init
+	setvar VAR_0x8004, CHAMPIONS_PYRAMID_TENT_FUNC_INIT
+	special CallChampionsPyramidTentFunction
+	.endm
+
+	@ Get the current prize item id
+	.macro championspyramidtent_getprize
+	setvar VAR_0x8004, CHAMPIONS_PYRAMID_TENT_FUNC_GET_PRIZE
+	special CallChampionsPyramidTentFunction
+	.endm
+
+	@ Save the game and set the challenge status
+	.macro championspyramidtent_save challengeStatus:req
+	setvar VAR_0x8004, CHAMPIONS_PYRAMID_TENT_FUNC_SAVE
+	setvar VAR_0x8005, \challengeStatus
+	special CallChampionsPyramidTentFunction
+	.endm
+
+	@ Set the prize item as randomly selected from a list. Randomness unnecessary, as the list is only 1 item
+	.macro championspyramidtent_setrandomprize
+	setvar VAR_0x8004, CHAMPIONS_PYRAMID_TENT_FUNC_SET_RANDOM_PRIZE
+	special CallChampionsPyramidTentFunction
+	.endm
+
+	@ Give the current prize item. FALSE if no room for prize
+	.macro championspyramidtent_giveprize
+	setvar VAR_0x8004, CHAMPIONS_PYRAMID_TENT_FUNC_GIVE_PRIZE
+	special CallChampionsPyramidTentFunction
+	.endm
+
+	@ Buffer the opponent trainer's name to STR_VAR_1
+	.macro championspyramidtent_getopponentname
+	setvar VAR_0x8004, CHAMPIONS_PYRAMID_TENT_FUNC_GET_OPPONENT_NAME
+	special CallChampionsPyramidTentFunction
+	.endm
+

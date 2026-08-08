@@ -84,6 +84,13 @@
 	special CallBattlePikeFunction
 	.endm
 
+	@ Rolled once on room entry: buffers either a reward message (and actually gives the
+	@ reward) to gStringVar4, or falls back to pike_getnpcmsg's plain flavor text
+	.macro pike_getnpcreward
+	setvar VAR_0x8004, BATTLE_PIKE_FUNC_TRY_GIVE_NPC_REWARD
+	special CallBattlePikeFunction
+	.endm
+
 	@ Flashes the screen 3 times for when the Dusclops/Kirlia attacks the player
 	.macro pike_flashscreen
 	setvar VAR_0x8004, BATTLE_PIKE_FUNC_STATUS_SCREEN_FLASH

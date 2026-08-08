@@ -14,14 +14,14 @@
   "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
   "connections": [
     {
-      "map": "MAP_ALLSTAR_VILLAGE",
-      "offset": 36,
-      "direction": "up"
+      "map": "MAP_VETERANS_BRIDGE",
+      "offset": 40,
+      "direction": "right"
     },
     {
-      "map": "MAP_LEGACY_LAGOON",
+      "map": "MAP_CAMERUPTHUMPEDBRIDGE",
       "offset": 0,
-      "direction": "right"
+      "direction": "up"
     }
   ],
   "object_events": [],

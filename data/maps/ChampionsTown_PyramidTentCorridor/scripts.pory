@@ -1,0 +1,52 @@
+raw`
+ChampionsTown_PyramidTentCorridor_MapScripts::
+	map_script MAP_SCRIPT_ON_FRAME_TABLE, ChampionsTown_PyramidTentCorridor_OnFrame
+	.byte 0
+
+ChampionsTown_PyramidTentCorridor_OnFrame:
+	map_script_2 VAR_TEMP_0, 0, ChampionsTown_PyramidTentCorridor_EventScript_EnterCorridor
+	.2byte 0
+
+ChampionsTown_PyramidTentCorridor_EventScript_EnterCorridor::
+	lockall
+	setvar VAR_TEMP_0, 1
+	msgbox ChampionsTown_PyramidTentCorridor_Text_DimCorridor, MSGBOX_DEFAULT
+	waitmessage
+	randomelement ITEM_POKE_BALL, ITEM_GREAT_BALL, ITEM_POTION, ITEM_SUPER_POTION, ITEM_ESCAPE_ROPE, ITEM_HEART_SCALE, ITEM_STAR_PIECE
+	giveitem VAR_RESULT
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_CORRIDOR_ATTENDANT, ChampionsTown_PyramidTentCorridor_Movement_WalkToDoor
+	applymovement LOCALID_PLAYER, ChampionsTown_PyramidTentCorridor_Movement_WalkToDoor
+	waitmovement 0
+	opendoor 2, 1
+	waitdooranim
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_CORRIDOR_ATTENDANT, ChampionsTown_PyramidTentCorridor_Movement_AttendantEnterDoor
+	applymovement LOCALID_PLAYER, ChampionsTown_PyramidTentCorridor_Movement_PlayerEnterDoor
+	waitmovement 0
+	closedoor 2, 1
+	waitdooranim
+	setvar VAR_0x8006, 0
+	warp MAP_CHAMPIONS_TOWN_PYRAMID_TENT_BATTLE_ROOM, 4, 4
+	waitstate
+	releaseall
+	end
+
+ChampionsTown_PyramidTentCorridor_Movement_WalkToDoor:
+	walk_up
+	walk_up
+	walk_up
+	walk_up
+	step_end
+
+ChampionsTown_PyramidTentCorridor_Movement_PlayerEnterDoor:
+	walk_up
+ChampionsTown_PyramidTentCorridor_Movement_AttendantEnterDoor:
+	walk_up
+	set_invisible
+	step_end
+
+ChampionsTown_PyramidTentCorridor_Text_DimCorridor:
+	.string "The corridor ahead is dim, lit only\n"
+	.string "by a few flickering torches…\p"
+	.string "Something catches your eye on the\n"
+	.string "ground as you walk.$"
+`

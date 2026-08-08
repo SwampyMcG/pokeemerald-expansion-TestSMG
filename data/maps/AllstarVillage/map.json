@@ -14,23 +14,13 @@
   "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
   "connections": [
     {
-      "map": "MAP_BATTLE_FRONTIER_OUTSIDE_WEST",
-      "offset": 20,
-      "direction": "right"
-    },
-    {
       "map": "MAP_RISING_ROCK",
       "offset": 24,
       "direction": "up"
     },
     {
-      "map": "MAP_RISING_MEADOW",
-      "offset": -36,
-      "direction": "down"
-    },
-    {
-      "map": "MAP_LEGACY_LAGOON",
-      "offset": 24,
+      "map": "MAP_CAMERUPTHUMPEDBRIDGE",
+      "offset": -50,
       "direction": "down"
     }
   ],

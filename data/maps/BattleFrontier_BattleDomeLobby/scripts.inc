@@ -46,11 +46,25 @@ BattleFrontier_BattleDomeLobby_EventScript_WonChallenge::
 	lockall
 	frontier_isbrain
 	goto_if_eq VAR_RESULT, TRUE, BattleFrontier_BattleDomeLobby_EventScript_DefeatedAce
+	frontier_isleader
+	goto_if_eq VAR_RESULT, TRUE, BattleFrontier_BattleDomeLobby_EventScript_DefeatedLeader
 	msgbox BattleFrontier_BattleDomeLobby_Text_CongratsForWinningTourney, MSGBOX_DEFAULT
 	goto BattleFrontier_BattleDomeLobby_EventScript_GiveBattlePoints
 
+BattleFrontier_BattleDomeLobby_EventScript_DefeatedLeader::
+	msgbox BattleFrontier_BattleDomeLobby_Text_DefeatedLeader, MSGBOX_DEFAULT
+	goto BattleFrontier_BattleDomeLobby_EventScript_AwardLevelModeCap
+
 BattleFrontier_BattleDomeLobby_EventScript_DefeatedAce::
 	msgbox BattleFrontier_BattleDomeLobby_Text_CongratsDefeatedTucker, MSGBOX_DEFAULT
+BattleFrontier_BattleDomeLobby_EventScript_AwardLevelModeCap::
+	frontier_get FRONTIER_DATA_LVL_MODE
+	goto_if_eq VAR_RESULT, FRONTIER_LVL_OPEN, BattleFrontier_BattleDomeLobby_EventScript_AwardGoldBottleCap
+	msgbox BattleFrontier_BattleDomeLobby_Text_AwardSilverBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_BOTTLE_CAP
+	goto BattleFrontier_BattleDomeLobby_EventScript_GiveBattlePoints
+
+BattleFrontier_BattleDomeLobby_EventScript_AwardGoldBottleCap::
 	msgbox BattleFrontier_BattleDomeLobby_Text_AwardGoldBottleCap, MSGBOX_DEFAULT
 	giveitem ITEM_GOLD_BOTTLE_CAP
 BattleFrontier_BattleDomeLobby_EventScript_GiveBattlePoints::
@@ -649,6 +663,15 @@ BattleFrontier_BattleDomeLobby_Text_CongratsDefeatedTucker:
 BattleFrontier_BattleDomeLobby_Text_AwardGoldBottleCap:
 	.string "And for defeating a FRONTIER BRAIN,\n"
 	.string "please take this.$"
+
+BattleFrontier_BattleDomeLobby_Text_AwardSilverBottleCap:
+	.string "As a token of that victory, please\n"
+	.string "take this.$"
+
+BattleFrontier_BattleDomeLobby_Text_DefeatedLeader:
+	.string "Incredible! You've defeated a visiting\n"
+	.string "GYM LEADER!\p"
+	.string "$"
 
 BattleFrontier_BattleDomeLobby_Text_AwardTheseBattlePoints:
 	.string "In recognition of your strategy--\n"

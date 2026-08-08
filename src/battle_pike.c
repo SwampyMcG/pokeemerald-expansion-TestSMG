@@ -66,6 +66,7 @@ static void GetRoomInflictedStatus(void);
 static void GetRoomInflictedStatusMon(void);
 static void HealOneOrTwoMons(void);
 static void BufferNPCMessage(void);
+static void TryGiveNPCRoomReward(void);
 static void StatusInflictionScreenFlash(void);
 static void GetInBattlePike(void);
 static void SetHintedRoom(void);
@@ -717,7 +718,8 @@ static void (*const sBattlePikeFunctions[])(void) =
     [BATTLE_PIKE_FUNC_SAVE_HELD_ITEMS]         = SaveMonHeldItems,
     [BATTLE_PIKE_FUNC_RESET_HELD_ITEMS]        = RestoreMonHeldItems,
     [BATTLE_PIKE_FUNC_INIT]                    = InitPikeChallenge,
-    [BATTLE_PIKE_FUNC_GIVE_BONUS_POINTS]       = GivePikeBonusPoints
+    [BATTLE_PIKE_FUNC_GIVE_BONUS_POINTS]       = GivePikeBonusPoints,
+    [BATTLE_PIKE_FUNC_TRY_GIVE_NPC_REWARD]     = TryGiveNPCRoomReward
 };
 
 static const u8 sRoomTypeHints[] = {
@@ -755,6 +757,21 @@ void CallBattlePikeFunction(void)
     sBattlePikeFunctions[gSpecialVar_0x8004]();
 }
 
+// Type-matched overworld sprite for each PIKE_STATUSMON_* curse-mon, using the dynamic
+// species-graphics encoding (OBJ_EVENT_GFX_SPECIES) rather than named OBJ_EVENT_GFX_
+// constants - every species already has one via the follower Pokemon overworld pipeline
+// (graphics/pokemon/<species>/overworld.png), so no new art is needed here.
+static const u16 sStatusMonGfx[NUM_PIKE_STATUSMON] =
+{
+    [PIKE_STATUSMON_KIRLIA]    = OBJ_EVENT_GFX_SPECIES(KIRLIA),
+    [PIKE_STATUSMON_MUK]       = OBJ_EVENT_GFX_SPECIES(MUK),
+    [PIKE_STATUSMON_FROSLASS]  = OBJ_EVENT_GFX_SPECIES(FROSLASS),
+    [PIKE_STATUSMON_ELECTRODE] = OBJ_EVENT_GFX_SPECIES(ELECTRODE),
+    [PIKE_STATUSMON_MAGMAR]    = OBJ_EVENT_GFX_SPECIES(MAGMAR),
+    [PIKE_STATUSMON_HYPNO]     = OBJ_EVENT_GFX_SPECIES(HYPNO),
+    [PIKE_STATUSMON_SABLEYE]   = OBJ_EVENT_GFX_SPECIES(SABLEYE),
+};
+
 static void SetRoomType(void)
 {
     u8 roomType = GetNextRoomType();
@@ -788,10 +805,7 @@ static void SetupRoomObjectEvents(void)
         break;
     case PIKE_ROOM_STATUS:
         objGfx1 = OBJ_EVENT_GFX_GENTLEMAN;
-        if (sStatusMon == PIKE_STATUSMON_DUSCLOPS)
-            objGfx2 = OBJ_EVENT_GFX_DUSCLOPS;
-        else
-            objGfx2 = OBJ_EVENT_GFX_KIRLIA;
+        objGfx2 = sStatusMonGfx[sStatusMon];
         setObjGfx2 = TRUE;
         break;
     case PIKE_ROOM_HEAL_PART:
@@ -1061,9 +1075,6 @@ static void BufferNPCMessage(void)
 {
     int speechId;
 
-    if (TryGivePikeRoomTreasure())
-        return;
-
     if (gSaveBlock2Ptr->frontier.curChallengeBattleNum <= 4)
         speechId = sNPCTable[sNpcId].speechId1;
     else if (gSaveBlock2Ptr->frontier.curChallengeBattleNum <= 10)
@@ -1072,6 +1083,18 @@ static void BufferNPCMessage(void)
         speechId = sNPCTable[sNpcId].speechId3;
 
     FrontierSpeechToString(sNPCSpeeches[speechId]);
+}
+
+// Rolled once, when the room is first entered (see BattleFrontier_BattlePikeRoomNormal_
+// EventScript_EnterNPCRoom). Only reports whether something was actually given (via
+// gSpecialVar_Result) and buffers the reward message if so - the NPC only walks up and
+// puts on the little vignette when there's actually a reward; otherwise it just stays put
+// like a normal NPC, and talking to it uses BufferNPCMessage's flavor text as before.
+// Talking to it again after a reward's already been given also can't re-roll it, since
+// this special is only ever called once, on entry.
+static void TryGiveNPCRoomReward(void)
+{
+    gSpecialVar_Result = TryGivePikeRoomTreasure();
 }
 
 static void StatusInflictionScreenFlash(void)
@@ -1109,7 +1132,7 @@ static void HealMon(struct Pokemon *mon)
     SetMonData(mon, MON_DATA_STATUS, data);
 }
 
-static bool8 DoesAbilityPreventStatus(struct Pokemon *mon, u32 status)
+bool8 DoesAbilityPreventStatus(struct Pokemon *mon, u32 status)
 {
     enum Ability ability = GetMonAbility(mon);
     bool8 ret = FALSE;
@@ -1144,7 +1167,7 @@ static bool8 DoesAbilityPreventStatus(struct Pokemon *mon, u32 status)
     return ret;
 }
 
-static bool8 DoesTypePreventStatus(enum Species species, u32 status)
+bool8 DoesTypePreventStatus(enum Species species, u32 status)
 {
     bool8 ret = FALSE;
 
@@ -1202,7 +1225,7 @@ static bool8 TryInflictPikePPDrain(void)
             {
                 u16 newPP = pp / 2;
                 SetMonData(mon, MON_DATA_PP1 + moveSlot, &newPP);
-                sStatusMon = PIKE_STATUSMON_KIRLIA;
+                sStatusMon = PIKE_STATUSMON_SABLEYE;
                 return TRUE;
             }
         }
@@ -1316,19 +1339,20 @@ static bool8 InflictPikeStatusCurse(void)
     {
     case STATUS1_FREEZE:
     case STATUS1_FROSTBITE:
-        sStatusMon = PIKE_STATUSMON_DUSCLOPS;
+        sStatusMon = PIKE_STATUSMON_FROSLASS;
         break;
     case STATUS1_BURN:
-        if (Random() % 2 != 0)
-            sStatusMon = PIKE_STATUSMON_DUSCLOPS;
-        else
-            sStatusMon = PIKE_STATUSMON_KIRLIA;
+        sStatusMon = PIKE_STATUSMON_MAGMAR;
         break;
     case STATUS1_PARALYSIS:
+        sStatusMon = PIKE_STATUSMON_ELECTRODE;
+        break;
     case STATUS1_SLEEP:
+        sStatusMon = PIKE_STATUSMON_HYPNO;
+        break;
     case STATUS1_TOXIC_POISON:
     default:
-        sStatusMon = PIKE_STATUSMON_KIRLIA;
+        sStatusMon = PIKE_STATUSMON_MUK;
         break;
     }
 
@@ -1474,6 +1498,15 @@ static bool8 UNUSED GetInWildMonRoom(void)
     return sInWildMonRoom;
 }
 
+// TryGenerateBattlePikeWildMon runs twice per encounter: once with checkKeenEyeIntimidate
+// TRUE when the overworld sprite spawns (this is what the player actually sees walking
+// around), and again with it FALSE right as the battle starts. The species/boss roll has
+// to happen only on the first call and be reused on the second, or the two calls pick
+// different mons independently and the battle mon won't match the sprite the player saw.
+// Cleared once consumed, so the next fresh spawn rolls again normally.
+static const struct PikeWildMon *sPikeWildMonPending = NULL;
+static bool8 sPikeWildMonPendingIsBoss = FALSE;
+
 bool32 TryGenerateBattlePikeWildMon(bool8 checkKeenEyeIntimidate)
 {
     s32 i;
@@ -1484,20 +1517,38 @@ bool32 TryGenerateBattlePikeWildMon(bool8 checkKeenEyeIntimidate)
     const struct PikeWildMon *chosenMon;
     struct Pokemon *mon = &gParties[B_TRAINER_OPPONENT_A][0];
     u32 abilityNum;
-    // Rare "boss" encounter instead of the room's regular pool - see sBossMons above.
-    bool8 isBoss = ((Random() % PIKE_BOSS_MON_ODDS) == 0);
+    bool8 isBoss;
 
-    if (isBoss)
+    if (!checkKeenEyeIntimidate && sPikeWildMonPending != NULL)
     {
-        chosenMon = &sBossMons[lvlMode][Random() % NUM_PIKE_BOSS_MONS];
+        // Battle-start call - reuse whatever the spawn-time call already committed to.
+        chosenMon = sPikeWildMonPending;
+        isBoss = sPikeWildMonPendingIsBoss;
+        sPikeWildMonPending = NULL;
     }
     else
     {
-        u8 numMons;
+        // Rare "boss" encounter instead of the room's regular pool - see sBossMons above.
+        isBoss = ((Random() % PIKE_BOSS_MON_ODDS) == 0);
 
-        for (numMons = 0; wildMons[headerId][numMons].species != SPECIES_NONE; numMons++)
-            ;
-        chosenMon = &wildMons[headerId][Random() % numMons];
+        if (isBoss)
+        {
+            chosenMon = &sBossMons[lvlMode][Random() % NUM_PIKE_BOSS_MONS];
+        }
+        else
+        {
+            u8 numMons;
+
+            for (numMons = 0; wildMons[headerId][numMons].species != SPECIES_NONE; numMons++)
+                ;
+            do
+            {
+                chosenMon = &wildMons[headerId][Random() % numMons];
+                // Milotic is a much rarer pull than the rest of the table - only accept it
+                // 1 in 3 times a reroll lands on it, so its real odds end up around 1-in-18
+                // instead of flat with everything else.
+            } while (chosenMon->species == SPECIES_MILOTIC && (Random() % 3) != 0);
+        }
     }
 
     if (gSaveBlock2Ptr->frontier.lvlMode != FRONTIER_LVL_50)
@@ -1522,7 +1573,20 @@ bool32 TryGenerateBattlePikeWildMon(bool8 checkKeenEyeIntimidate)
     if (checkKeenEyeIntimidate == TRUE && !CanEncounterWildMon(monLevel))
         return FALSE;
 
+    // Only commit to the cache once the spawn is confirmed (past the ability check above) -
+    // a failed spawn attempt must never leave a stale pending choice for some later,
+    // unrelated encounter to pick up.
+    if (checkKeenEyeIntimidate)
+    {
+        sPikeWildMonPending = chosenMon;
+        sPikeWildMonPendingIsBoss = isBoss;
+    }
+
     SetMonData(mon, MON_DATA_SPECIES, &chosenMon->species);
+    // The underlying mon was already created (with a nickname baked in to match whatever
+    // species that initial generation produced) before this function retextures it - has
+    // to be explicitly resynced or the battle screen keeps showing the old name.
+    SetMonData(mon, MON_DATA_NICKNAME, GetSpeciesName(chosenMon->species));
     SetMonData(mon, MON_DATA_EXP, &gExperienceTables[gSpeciesInfo[chosenMon->species].growthRate][monLevel]);
 
     if (GetSpeciesAbility(chosenMon->species, 1))

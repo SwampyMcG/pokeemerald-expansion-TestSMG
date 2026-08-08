@@ -273,6 +273,9 @@ gSpecials::
 	def_special CallVerdanturfTentFunction
 	def_special CallFallarborTentFunction
 	def_special CallSlateportTentFunction
+	def_special CallChampionsDomeTentFunction
+	def_special CallChampionsPikeTentFunction
+	def_special CallChampionsPyramidTentFunction
 	def_special ChoosePartyForBattleFrontier, waitstate=1
 	def_special ValidateEReaderTrainer
 	def_special GetBattleTowerSinglesStreak
@@ -476,6 +479,7 @@ gSpecials::
 	def_special ScrollableMultichoice_TryReturnToList
 	def_special BufferBattleTowerElevatorFloors
 	def_special TryStoreHeldItemsInPyramidBag
+	def_special TransferPyramidBagToBag
 	def_special ChooseItemsToTossFromPyramidBag, waitstate=1
 	def_special DoBattlePyramidMonsHaveHeldItem
 	def_special BattlePyramidChooseMonHeldItems, waitstate=1

@@ -35,4 +35,42 @@
 #define SLATEPORT_TENT_FUNC_GENERATE_OPPONENT_MONS  8
 #define SLATEPORT_TENT_FUNC_GENERATE_RENTAL_MONS    9
 
+#define CHAMPIONS_DOME_TENT_FUNC_INIT              0
+#define CHAMPIONS_DOME_TENT_FUNC_GET_PRIZE         1
+#define CHAMPIONS_DOME_TENT_FUNC_SET_PRIZE         2
+#define CHAMPIONS_DOME_TENT_FUNC_SAVE              3
+#define CHAMPIONS_DOME_TENT_FUNC_SET_RANDOM_PRIZE  4
+#define CHAMPIONS_DOME_TENT_FUNC_GIVE_PRIZE        5
+#define CHAMPIONS_DOME_TENT_FUNC_GENERATE_BRACKET  6 // Rolls the 8-slot mini bracket and records the player's 3 opponents (Round of 8/Semifinal/Final)
+#define CHAMPIONS_DOME_TENT_FUNC_GET_OPPONENT_NAME 7
+
+// Number of distinct trainers involved in a Champions Dome Tent bracket (the player + 7 others,
+// even though only 3 of those 7 are ever actually fought - the rest are eliminated off-screen).
+#define CHAMPIONS_DOME_BRACKET_SIZE 8
+
+#define CHAMPIONS_PIKE_TENT_FUNC_INIT              0
+#define CHAMPIONS_PIKE_TENT_FUNC_GET_PRIZE         1
+#define CHAMPIONS_PIKE_TENT_FUNC_SET_PRIZE         2
+#define CHAMPIONS_PIKE_TENT_FUNC_SAVE              3
+#define CHAMPIONS_PIKE_TENT_FUNC_SET_RANDOM_PRIZE  4
+#define CHAMPIONS_PIKE_TENT_FUNC_GIVE_PRIZE        5
+#define CHAMPIONS_PIKE_TENT_FUNC_GET_OPPONENT_NAME 6
+#define CHAMPIONS_PIKE_TENT_FUNC_TRY_MYSTERY_ROOM  7 // Rolls the curse-or-treasure mystery room that replaces the 2nd battle
+
+// Results of CHAMPIONS_PIKE_TENT_FUNC_TRY_MYSTERY_ROOM, returned via VAR_RESULT
+#define CHAMPIONS_PIKE_MYSTERY_NOTHING         0 // No eligible target/no bag room - treated as a harmless empty room
+#define CHAMPIONS_PIKE_MYSTERY_CURSE_POISON    1
+#define CHAMPIONS_PIKE_MYSTERY_CURSE_PARALYSIS 2
+#define CHAMPIONS_PIKE_MYSTERY_CURSE_BURN      3
+#define CHAMPIONS_PIKE_MYSTERY_CURSE_SLEEP     4
+#define CHAMPIONS_PIKE_MYSTERY_TREASURE        5
+
+#define CHAMPIONS_PYRAMID_TENT_FUNC_INIT              0
+#define CHAMPIONS_PYRAMID_TENT_FUNC_GET_PRIZE         1
+#define CHAMPIONS_PYRAMID_TENT_FUNC_SET_PRIZE         2
+#define CHAMPIONS_PYRAMID_TENT_FUNC_SAVE              3
+#define CHAMPIONS_PYRAMID_TENT_FUNC_SET_RANDOM_PRIZE  4
+#define CHAMPIONS_PYRAMID_TENT_FUNC_GIVE_PRIZE        5
+#define CHAMPIONS_PYRAMID_TENT_FUNC_GET_OPPONENT_NAME 6
+
 #endif // GUARD_CONSTANTS_BATTLE_TENT_H

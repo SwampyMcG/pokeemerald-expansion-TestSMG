@@ -1,0 +1,27 @@
+mapscripts ChampionsTown_MapScripts {}
+
+raw`
+ChampionsTown_EventScript_DomeTentSign::
+	msgbox ChampionsTown_Text_DomeTentSign, MSGBOX_SIGN
+	end
+
+ChampionsTown_EventScript_PikeTentSign::
+	msgbox ChampionsTown_Text_PikeTentSign, MSGBOX_SIGN
+	end
+
+ChampionsTown_EventScript_PyramidTentSign::
+	msgbox ChampionsTown_Text_PyramidTentSign, MSGBOX_SIGN
+	end
+
+ChampionsTown_Text_DomeTentSign:
+	.string "CHAMPIONS DOME TENT\p"
+	.string "A miniature Battle Dome challenge.$"
+
+ChampionsTown_Text_PikeTentSign:
+	.string "CHAMPIONS PIKE TENT\p"
+	.string "A miniature Battle Pike challenge.$"
+
+ChampionsTown_Text_PyramidTentSign:
+	.string "CHAMPIONS PYRAMID TENT\p"
+	.string "A miniature Battle Pyramid challenge.$"
+`

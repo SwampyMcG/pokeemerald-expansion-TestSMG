@@ -1,0 +1,291 @@
+raw`
+ChampionsTown_PyramidTentLobby_MapScripts::
+	map_script MAP_SCRIPT_ON_FRAME_TABLE, ChampionsTown_PyramidTentLobby_OnFrame
+	.byte 0
+
+ChampionsTown_PyramidTentLobby_OnFrame:
+	map_script_2 VAR_TEMP_CHALLENGE_STATUS, 0, ChampionsTown_PyramidTentLobby_EventScript_GetChallengeStatus
+	map_script_2 VAR_TEMP_CHALLENGE_STATUS, CHALLENGE_STATUS_SAVING, ChampionsTown_PyramidTentLobby_EventScript_QuitWithoutSaving
+	map_script_2 VAR_TEMP_CHALLENGE_STATUS, CHALLENGE_STATUS_PAUSED, ChampionsTown_PyramidTentLobby_EventScript_ResumeChallenge
+	map_script_2 VAR_TEMP_CHALLENGE_STATUS, CHALLENGE_STATUS_WON, ChampionsTown_PyramidTentLobby_EventScript_WonChallenge
+	map_script_2 VAR_TEMP_CHALLENGE_STATUS, CHALLENGE_STATUS_LOST, ChampionsTown_PyramidTentLobby_EventScript_LostChallenge
+	.2byte 0
+
+ChampionsTown_PyramidTentLobby_EventScript_GetChallengeStatus::
+	frontier_getstatus
+	end
+
+ChampionsTown_PyramidTentLobby_EventScript_QuitWithoutSaving::
+	lockall
+	msgbox ChampionsTown_PyramidTentLobby_Text_DidntSaveBeforeQuitting, MSGBOX_DEFAULT
+	closemessage
+	frontier_set FRONTIER_DATA_CHALLENGE_STATUS, 0
+	setvar VAR_TEMP_CHALLENGE_STATUS, 255
+	frontier_set FRONTIER_DATA_LVL_MODE, FRONTIER_LVL_50
+	releaseall
+	end
+
+ChampionsTown_PyramidTentLobby_EventScript_WonChallenge::
+	lockall
+	msgbox ChampionsTown_PyramidTentLobby_Text_MadeItOut, MSGBOX_DEFAULT
+	message ChampionsTown_PyramidTentLobby_Text_WaitWhileSaveGame
+	waitmessage
+	championspyramidtent_setrandomprize
+	frontier_set FRONTIER_DATA_LVL_MODE, FRONTIER_LVL_50
+	championspyramidtent_save 0
+	playse SE_SAVE
+	waitse
+
+ChampionsTown_PyramidTentLobby_EventScript_GivePrize::
+	msgbox ChampionsTown_PyramidTentLobby_Text_PresentYouWithPrize, MSGBOX_DEFAULT
+	championspyramidtent_giveprize
+	switch VAR_RESULT
+	case FALSE, ChampionsTown_PyramidTentLobby_EventScript_NoRoomForPrize
+	frontier_set FRONTIER_DATA_CHALLENGE_STATUS, 0
+	message ChampionsTown_PyramidTentLobby_Text_ReceivedPrize
+	waitmessage
+	playfanfare MUS_OBTAIN_ITEM
+	waitfanfare
+	msgbox ChampionsTown_PyramidTentLobby_Text_AwaitAnotherChallenge2, MSGBOX_DEFAULT
+	closemessage
+	setvar VAR_TEMP_CHALLENGE_STATUS, 255
+	releaseall
+	end
+
+ChampionsTown_PyramidTentLobby_EventScript_NoRoomForPrize::
+	msgbox ChampionsTown_PyramidTentLobby_Text_BagFullReturnForPrize, MSGBOX_DEFAULT
+	waitmessage
+	closemessage
+	setvar VAR_TEMP_CHALLENGE_STATUS, 255
+	releaseall
+	end
+
+ChampionsTown_PyramidTentLobby_EventScript_PrizeWaiting::
+	lockall
+	msgbox ChampionsTown_PyramidTentLobby_Text_MadeItOut, MSGBOX_DEFAULT
+	goto ChampionsTown_PyramidTentLobby_EventScript_GivePrize
+	end
+
+ChampionsTown_PyramidTentLobby_EventScript_LostChallenge::
+	lockall
+	message ChampionsTown_PyramidTentLobby_Text_ThankYouWaitWhileSaving
+	waitmessage
+	frontier_set FRONTIER_DATA_LVL_MODE, FRONTIER_LVL_50
+	championspyramidtent_save 0
+	playse SE_SAVE
+	waitse
+	msgbox ChampionsTown_PyramidTentLobby_Text_AwaitAnotherChallenge2, MSGBOX_DEFAULT
+	closemessage
+	setvar VAR_TEMP_CHALLENGE_STATUS, 255
+	releaseall
+	end
+
+ChampionsTown_PyramidTentLobby_EventScript_ResumeChallenge::
+	lockall
+	message ChampionsTown_PyramidTentLobby_Text_LookingForwardToArrival
+	waitmessage
+	championspyramidtent_save CHALLENGE_STATUS_SAVING
+	playse SE_SAVE
+	waitse
+	frontier_set FRONTIER_DATA_PAUSED, FALSE
+	setvar VAR_TEMP_CHALLENGE_STATUS, 255
+	goto ChampionsTown_PyramidTentLobby_EventScript_EnterChallenge
+
+ChampionsTown_PyramidTentLobby_EventScript_Attendant::
+	lock
+	faceplayer
+	championspyramidtent_getprize
+	goto_if_ne VAR_RESULT, ITEM_NONE, ChampionsTown_PyramidTentLobby_EventScript_PrizeWaiting
+	special SavePlayerParty
+	msgbox ChampionsTown_PyramidTentLobby_Text_WelcomeExplain, MSGBOX_DEFAULT
+ChampionsTown_PyramidTentLobby_EventScript_AskEnterChallenge::
+	message ChampionsTown_PyramidTentLobby_Text_TakeChallenge
+	waitmessage
+	multichoice 17, 6, MULTI_CHALLENGEINFO, FALSE
+	switch VAR_RESULT
+	case 0, ChampionsTown_PyramidTentLobby_EventScript_TryEnterChallenge
+	case 1, ChampionsTown_PyramidTentLobby_EventScript_ExplainChallenge
+	case 2, ChampionsTown_PyramidTentLobby_EventScript_CancelChallenge
+	case MULTI_B_PRESSED, ChampionsTown_PyramidTentLobby_EventScript_CancelChallenge
+
+ChampionsTown_PyramidTentLobby_EventScript_TryEnterChallenge::
+	setvar VAR_FRONTIER_FACILITY, FRONTIER_FACILITY_PYRAMID
+	setvar VAR_FRONTIER_BATTLE_MODE, FRONTIER_MODE_SINGLES
+	setvar VAR_RESULT, 2
+	frontier_checkineligible
+	goto_if_eq VAR_0x8004, TRUE, ChampionsTown_PyramidTentLobby_EventScript_NotEnoughValidMons
+	frontier_set FRONTIER_DATA_LVL_MODE, FRONTIER_LVL_TENT
+	msgbox ChampionsTown_PyramidTentLobby_Text_SelectThreeMons, MSGBOX_DEFAULT
+	fadescreen FADE_TO_BLACK
+	setvar VAR_0x8004, 1
+	setvar VAR_0x8005, FRONTIER_PARTY_SIZE
+	special ChoosePartyForBattleFrontier
+	goto_if_eq VAR_RESULT, 0, ChampionsTown_PyramidTentLobby_EventScript_LoadPartyCancelChallenge
+	msgbox ChampionsTown_PyramidTentLobby_Text_SaveBeforeChallenge, MSGBOX_YESNO
+	switch VAR_RESULT
+	case NO, ChampionsTown_PyramidTentLobby_EventScript_LoadPartyCancelChallenge
+	case YES, ChampionsTown_PyramidTentLobby_EventScript_SaveBeforeChallenge
+	case MULTI_B_PRESSED, ChampionsTown_PyramidTentLobby_EventScript_LoadPartyCancelChallenge
+
+ChampionsTown_PyramidTentLobby_EventScript_SaveBeforeChallenge::
+	setvar VAR_TEMP_CHALLENGE_STATUS, 0
+	frontier_set FRONTIER_DATA_SELECTED_MON_ORDER
+	championspyramidtent_init
+	frontier_set FRONTIER_DATA_CHALLENGE_STATUS, CHALLENGE_STATUS_SAVING
+	frontier_set FRONTIER_DATA_PAUSED, FALSE
+	special LoadPlayerParty
+	closemessage
+	delay 2
+	call Common_EventScript_SaveGame
+	setvar VAR_TEMP_CHALLENGE_STATUS, 255
+	goto_if_eq VAR_RESULT, 0, ChampionsTown_PyramidTentLobby_EventScript_CancelChallengeSaveFailed
+ChampionsTown_PyramidTentLobby_EventScript_EnterChallenge::
+	special SavePlayerParty
+	frontier_setpartyorder FRONTIER_PARTY_SIZE
+	msgbox ChampionsTown_PyramidTentLobby_Text_GuideYouToBattleTent, MSGBOX_DEFAULT
+	closemessage
+	call ChampionsTown_PyramidTentLobby_EventScript_WalkToDoor
+	warp MAP_CHAMPIONS_TOWN_PYRAMID_TENT_CORRIDOR, 2, 7
+	setvar VAR_TEMP_CHALLENGE_STATUS, 0
+	waitstate
+	end
+
+ChampionsTown_PyramidTentLobby_EventScript_ExplainChallenge::
+	msgbox ChampionsTown_PyramidTentLobby_Text_ExplainPyramidTent, MSGBOX_DEFAULT
+	goto ChampionsTown_PyramidTentLobby_EventScript_AskEnterChallenge
+
+ChampionsTown_PyramidTentLobby_EventScript_NotEnoughValidMons::
+	switch VAR_RESULT
+	case FRONTIER_LVL_50, ChampionsTown_PyramidTentLobby_EventScript_NotEnoughValidMonsLv50
+	case FRONTIER_LVL_OPEN, ChampionsTown_PyramidTentLobby_EventScript_NotEnoughValidMonsLvOpen
+ChampionsTown_PyramidTentLobby_EventScript_NotEnoughValidMonsLv50::
+	msgbox ChampionsTown_PyramidTentLobby_Text_NotEnoughValidMonsLv50, MSGBOX_DEFAULT
+	goto ChampionsTown_PyramidTentLobby_EventScript_EndCancelChallenge
+
+ChampionsTown_PyramidTentLobby_EventScript_NotEnoughValidMonsLvOpen::
+	msgbox ChampionsTown_PyramidTentLobby_Text_NotEnoughValidMonsLvOpen, MSGBOX_DEFAULT
+	goto ChampionsTown_PyramidTentLobby_EventScript_EndCancelChallenge
+
+ChampionsTown_PyramidTentLobby_EventScript_CancelChallengeSaveFailed::
+	frontier_set FRONTIER_DATA_CHALLENGE_STATUS, 0
+	goto ChampionsTown_PyramidTentLobby_EventScript_CancelChallenge
+
+ChampionsTown_PyramidTentLobby_EventScript_LoadPartyCancelChallenge::
+	special LoadPlayerParty
+ChampionsTown_PyramidTentLobby_EventScript_CancelChallenge::
+	msgbox ChampionsTown_PyramidTentLobby_Text_AwaitAnotherChallenge, MSGBOX_DEFAULT
+ChampionsTown_PyramidTentLobby_EventScript_EndCancelChallenge::
+	release
+	end
+
+ChampionsTown_PyramidTentLobby_EventScript_WalkToDoor::
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_ATTENDANT, ChampionsTown_PyramidTentLobby_Movement_AttendantWalkToDoor
+	applymovement LOCALID_PLAYER, ChampionsTown_PyramidTentLobby_Movement_PlayerWalkToDoor
+	waitmovement 0
+	opendoor 6, 1
+	waitdooranim
+	applymovement LOCALID_CHAMPIONS_PYRAMID_TENT_ATTENDANT, ChampionsTown_PyramidTentLobby_Movement_AttendantEnterDoor
+	applymovement LOCALID_PLAYER, ChampionsTown_PyramidTentLobby_Movement_PlayerEnterDoor
+	waitmovement 0
+	closedoor 6, 1
+	waitdooranim
+	return
+
+ChampionsTown_PyramidTentLobby_Movement_AttendantWalkToDoor:
+	walk_up
+	walk_up
+	walk_up
+	step_end
+
+ChampionsTown_PyramidTentLobby_Movement_AttendantEnterDoor:
+	walk_up
+	set_invisible
+	step_end
+
+ChampionsTown_PyramidTentLobby_Movement_PlayerWalkToDoor:
+	walk_up
+	walk_up
+	walk_up
+	step_end
+
+ChampionsTown_PyramidTentLobby_Movement_PlayerEnterDoor:
+	walk_up
+	walk_up
+	set_invisible
+	step_end
+
+ChampionsTown_PyramidTentLobby_Text_WelcomeExplain:
+	.string "Welcome to the CHAMPIONS PYRAMID\n"
+	.string "TENT!\p"
+	.string "Just a short, dimly-lit corridor to\n"
+	.string "explore before three straight\l"
+	.string "battles. Keep an eye out for\l"
+	.string "something worth picking up on\l"
+	.string "your way in.$"
+
+ChampionsTown_PyramidTentLobby_Text_ExplainPyramidTent:
+	.string "Bring three POKéMON.\p"
+	.string "Explore the corridor, then win three\n"
+	.string "battles in a row for a prize!$"
+
+ChampionsTown_PyramidTentLobby_Text_TakeChallenge:
+	.string "Will you take the challenge?$"
+
+ChampionsTown_PyramidTentLobby_Text_SelectThreeMons:
+	.string "Select the three POKéMON you'll\n"
+	.string "bring on the expedition.$"
+
+ChampionsTown_PyramidTentLobby_Text_SaveBeforeChallenge:
+	.string "The challenge will begin shortly.\p"
+	.string "Would you like to save before you\n"
+	.string "begin?$"
+
+ChampionsTown_PyramidTentLobby_Text_GuideYouToBattleTent:
+	.string "Right this way!$"
+
+ChampionsTown_PyramidTentLobby_Text_AwaitAnotherChallenge:
+	.string "We'll be awaiting your challenge!$"
+
+ChampionsTown_PyramidTentLobby_Text_AwaitAnotherChallenge2:
+	.string "We'll be awaiting your next\n"
+	.string "challenge!$"
+
+ChampionsTown_PyramidTentLobby_Text_NotEnoughValidMonsLv50:
+	.string "You need three POKéMON of Lv. 50\n"
+	.string "or lower, none identical, to enter.$"
+
+ChampionsTown_PyramidTentLobby_Text_NotEnoughValidMonsLvOpen:
+	.string "You need three POKéMON, none\n"
+	.string "identical, to enter.$"
+
+ChampionsTown_PyramidTentLobby_Text_DidntSaveBeforeQuitting:
+	.string "It looks like you didn't save before\n"
+	.string "you quit last time.$"
+
+ChampionsTown_PyramidTentLobby_Text_MadeItOut:
+	.string "Congratulations!\p"
+	.string "You made it out with three straight\n"
+	.string "wins!$"
+
+ChampionsTown_PyramidTentLobby_Text_WaitWhileSaveGame:
+	.string "Please wait while I save the game…$"
+
+ChampionsTown_PyramidTentLobby_Text_PresentYouWithPrize:
+	.string "As proof of your victory, please\n"
+	.string "take this.$"
+
+ChampionsTown_PyramidTentLobby_Text_ReceivedPrize:
+	.string "{PLAYER} received the prize!$"
+
+ChampionsTown_PyramidTentLobby_Text_BagFullReturnForPrize:
+	.string "Oh? Your Bag is full.\p"
+	.string "Please come back for your prize\n"
+	.string "once you've made room.$"
+
+ChampionsTown_PyramidTentLobby_Text_ThankYouWaitWhileSaving:
+	.string "Thank you for competing!\p"
+	.string "Please wait while I save the game…$"
+
+ChampionsTown_PyramidTentLobby_Text_LookingForwardToArrival:
+	.string "We look forward to your arrival!$"
+`

@@ -537,6 +537,9 @@ struct BattleFrontier
     /*0xEFA*/ u8 unused_EFA;
     /*0xEFB*/ u8 unused_EFB;
     /*0xEFC*/ struct DomeMonData domePlayerPartyData[FRONTIER_PARTY_SIZE];
+    u16 championsDomeTentPrize; // Appended field, no fixed offset comment - see ChampionsTown Battle Tents
+    u16 championsPikeTentPrize;
+    u16 championsPyramidTentPrize;
 };
 
 struct ApprenticeQuestion

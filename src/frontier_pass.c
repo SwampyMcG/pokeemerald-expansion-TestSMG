@@ -4,7 +4,6 @@
 #include "trainer_card.h"
 #include "battle_anim.h"
 #include "event_data.h"
-#include "recorded_battle.h"
 #include "malloc.h"
 #include "sprite.h"
 #include "scanline_effect.h"
@@ -23,6 +22,7 @@
 #include "sound.h"
 #include "string_util.h"
 #include "battle_pyramid.h"
+#include "frontier_rankings_screen.h"
 #include "overworld.h"
 #include "math_util.h"
 #include "constants/battle_frontier.h"
@@ -521,7 +521,7 @@ static const u8 *const sPassAreaDescriptions[CURSOR_AREA_COUNT + 1] =
     [CURSOR_AREA_NOTHING]        = gText_ThereIsNoBattleRecord, // NOTHING is re-used for CURSOR_AREA_RECORD when no Record is present
     [CURSOR_AREA_MAP]            = gText_CheckFrontierMap,
     [CURSOR_AREA_CARD]           = gText_CheckTrainerCard,
-    [CURSOR_AREA_RECORD]         = gText_ViewRecordedBattle,
+    [CURSOR_AREA_RECORD]         = gText_ViewFacilityRankings,
     [CURSOR_AREA_CANCEL]         = gText_PutAwayFrontierPass,
     [CURSOR_AREA_POINTS]         = gText_CurrentBattlePoints,
     [CURSOR_AREA_EARNED_SYMBOLS] = gText_CollectedSymbols,
@@ -624,7 +624,10 @@ static u32 AllocateFrontierPassData(MainCallback callback)
     }
 
     sPassData->battlePoints = gSaveBlock2Ptr->frontier.battlePoints;
-    sPassData->hasBattleRecord = CanCopyRecordedBattleSaveData();
+    // The Record slot now always opens the Facility Rankings screen instead of battle
+    // recording playback, which doesn't require a saved recording to exist - so this stays
+    // TRUE unconditionally, keeping the slot's gate/description/highlight logic unchanged.
+    sPassData->hasBattleRecord = TRUE;
     sPassData->areaToShow = CURSOR_AREA_NOTHING;
     sPassData->trainerStars = CountPlayerTrainerStars();
     for (i = 0; i < NUM_FRONTIER_FACILITIES; i++)
@@ -939,7 +942,7 @@ static void CB2_ShowFrontierPassFeature(void)
         sSavedPassData.cursorX = sPassData->cursorX;
         sSavedPassData.cursorY = sPassData->cursorY;
         FreeFrontierPassData();
-        PlayRecordedBattle(CB2_ReturnFromRecord);
+        ShowFrontierRankingsScreen(CB2_ReturnFromRecord);
         break;
     case CURSOR_AREA_CARD:
         ShowPlayerTrainerCard(CB2_ReshowFrontierPass);

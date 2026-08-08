@@ -1743,6 +1743,7 @@ extern const u8 gText_ThereIsNoBattleRecord[];
 extern const u8 gText_CheckFrontierMap[];
 extern const u8 gText_CheckTrainerCard[];
 extern const u8 gText_ViewRecordedBattle[];
+extern const u8 gText_ViewFacilityRankings[];
 extern const u8 gText_PutAwayFrontierPass[];
 extern const u8 gText_CurrentBattlePoints[];
 extern const u8 gText_CollectedSymbols[];

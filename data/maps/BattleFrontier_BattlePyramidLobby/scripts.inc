@@ -43,11 +43,25 @@ BattleFrontier_BattlePyramidLobby_EventScript_WonChallenge::
 	lockall
 	frontier_isbrain
 	goto_if_eq VAR_RESULT, TRUE, BattleFrontier_BattlePyramidLobby_EventScript_DefeatedKing
+	frontier_isleader
+	goto_if_eq VAR_RESULT, TRUE, BattleFrontier_BattlePyramidLobby_EventScript_DefeatedLeader
 	msgbox BattleFrontier_BattlePyramidLobby_Text_YouveConqueredPyramid, MSGBOX_DEFAULT
 	goto BattleFrontier_BattlePyramidLobby_EventScript_GiveBattlePoints
 
+BattleFrontier_BattlePyramidLobby_EventScript_DefeatedLeader::
+	msgbox BattleFrontier_BattlePyramidLobby_Text_DefeatedLeader, MSGBOX_DEFAULT
+	goto BattleFrontier_BattlePyramidLobby_EventScript_AwardLevelModeCap
+
 BattleFrontier_BattlePyramidLobby_EventScript_DefeatedKing::
 	msgbox BattleFrontier_BattlePyramidLobby_Text_YouveDefeatedPyramidKing, MSGBOX_DEFAULT
+BattleFrontier_BattlePyramidLobby_EventScript_AwardLevelModeCap::
+	frontier_get FRONTIER_DATA_LVL_MODE
+	goto_if_eq VAR_RESULT, FRONTIER_LVL_OPEN, BattleFrontier_BattlePyramidLobby_EventScript_AwardGoldBottleCap
+	msgbox BattleFrontier_BattlePyramidLobby_Text_AwardSilverBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_BOTTLE_CAP
+	goto BattleFrontier_BattlePyramidLobby_EventScript_GiveBattlePoints
+
+BattleFrontier_BattlePyramidLobby_EventScript_AwardGoldBottleCap::
 	msgbox BattleFrontier_BattlePyramidLobby_Text_AwardGoldBottleCap, MSGBOX_DEFAULT
 	giveitem ITEM_GOLD_BOTTLE_CAP
 BattleFrontier_BattlePyramidLobby_EventScript_GiveBattlePoints::
@@ -63,9 +77,18 @@ BattleFrontier_BattlePyramidLobby_EventScript_GiveBattlePoints::
 	waitmessage
 	playse SE_EXP_MAX
 	waitse
+	msgbox BattleFrontier_BattlePyramidLobby_Text_ClaimAdventureBagPrompt, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, YES, BattleFrontier_BattlePyramidLobby_EventScript_ClaimAdventureBag
+BattleFrontier_BattlePyramidLobby_EventScript_TakeBattlePoints::
 	msgbox BattleFrontier_BattlePyramidLobby_Text_GiveYouTheseBattlePoints, MSGBOX_DEFAULT
 	frontier_givepoints
 	msgbox BattleFrontier_Text_ObtainedXBattlePoints, MSGBOX_GETPOINTS
+	goto BattleFrontier_BattlePyramidLobby_EventScript_FinishChallenge
+
+BattleFrontier_BattlePyramidLobby_EventScript_ClaimAdventureBag::
+	special TransferPyramidBagToBag
+	msgbox BattleFrontier_BattlePyramidLobby_Text_ClaimedAdventureBagForfeitedPoints, MSGBOX_DEFAULT
+BattleFrontier_BattlePyramidLobby_EventScript_FinishChallenge::
 	message BattleFrontier_BattlePyramidLobby_Text_RecordResultsWait
 	waitmessage
 	pyramid_setprize
@@ -674,6 +697,19 @@ BattleFrontier_BattlePyramidLobby_Text_UsedBattleBagWillBeKept:
 	.string "{PLAYER} turned the BATTLE BAG over\n"
 	.string "for the BAG's return.$"
 
+BattleFrontier_BattlePyramidLobby_Text_ClaimAdventureBagPrompt:
+	.string "Before we settle up, would you like to\n"
+	.string "claim the contents of your BATTLE BAG\l"
+	.string "for your own?\p"
+	.string "Doing so will forfeit your Battle\n"
+	.string "Point reward for this challenge.$"
+
+BattleFrontier_BattlePyramidLobby_Text_ClaimedAdventureBagForfeitedPoints:
+	.string "Very well! The contents of your BATTLE\n"
+	.string "BAG are now yours to keep.\p"
+	.string "Your Battle Points have been forfeited\n"
+	.string "for this challenge.$"
+
 BattleFrontier_BattlePyramidLobby_Text_RecordResultsWait:
 	.string "I must record your results.\n"
 	.string "Please wait.$"
@@ -863,6 +899,15 @@ BattleFrontier_BattlePyramidLobby_Text_YouveDefeatedPyramidKing:
 BattleFrontier_BattlePyramidLobby_Text_AwardGoldBottleCap:
 	.string "And for defeating a FRONTIER BRAIN,\n"
 	.string "please take this.$"
+
+BattleFrontier_BattlePyramidLobby_Text_AwardSilverBottleCap:
+	.string "As a token of that victory, please\n"
+	.string "take this.$"
+
+BattleFrontier_BattlePyramidLobby_Text_DefeatedLeader:
+	.string "Incredible! You've defeated a visiting\n"
+	.string "GYM LEADER!\p"
+	.string "$"
 
 BattleFrontier_BattlePyramidLobby_Text_GiveYouTheseBattlePoints:
 	.string "Young explorer!\n"

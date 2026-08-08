@@ -1936,6 +1936,24 @@ u8 SetTentPtrsGetLevel(void)
         gFacilityTrainers = gFallarborBattleTentTrainers;
         gFacilityTrainerMons = gFallarborBattleTentMons;
     }
+    else if (facility == FRONTIER_FACILITY_DOME)
+    {
+        // Champions Dome Tent. Reuses the Verdanturf Tent's trainer pool for now.
+        gFacilityTrainers = gVerdanturfBattleTentTrainers;
+        gFacilityTrainerMons = gVerdanturfBattleTentMons;
+    }
+    else if (facility == FRONTIER_FACILITY_PIKE)
+    {
+        // Champions Pike Tent. Reuses the Fallarbor Tent's trainer pool for now.
+        gFacilityTrainers = gFallarborBattleTentTrainers;
+        gFacilityTrainerMons = gFallarborBattleTentMons;
+    }
+    else if (facility == FRONTIER_FACILITY_PYRAMID)
+    {
+        // Champions Pyramid Tent. Reuses the Slateport Tent's trainer pool for now.
+        gFacilityTrainers = gSlateportBattleTentTrainers;
+        gFacilityTrainerMons = gSlateportBattleTentMons;
+    }
     else
     {
         gFacilityTrainers = gBattleFrontierTrainers;
@@ -1954,15 +1972,24 @@ static void SetNextBattleTentOpponent(void)
     s32 i;
     u16 trainerId;
 
-    do
+    if (VarGet(VAR_FRONTIER_FACILITY) == FRONTIER_FACILITY_DOME)
     {
-        trainerId = GetBattleTentTrainerId();
-        for (i = 0; i < gSaveBlock2Ptr->frontier.curChallengeBattleNum; i++)
+        // Champions Dome Tent - the bracket (and thus all 3 opponents) was already decided by
+        // GenerateChampionsDomeBracket when the challenge started; just read this round's slot.
+        trainerId = gSaveBlock2Ptr->frontier.trainerIds[gSaveBlock2Ptr->frontier.curChallengeBattleNum];
+    }
+    else
+    {
+        do
         {
-            if (gSaveBlock2Ptr->frontier.trainerIds[i] == trainerId)
-                break;
-        }
-    } while (i != gSaveBlock2Ptr->frontier.curChallengeBattleNum);
+            trainerId = GetBattleTentTrainerId();
+            for (i = 0; i < gSaveBlock2Ptr->frontier.curChallengeBattleNum; i++)
+            {
+                if (gSaveBlock2Ptr->frontier.trainerIds[i] == trainerId)
+                    break;
+            }
+        } while (i != gSaveBlock2Ptr->frontier.curChallengeBattleNum);
+    }
 
     TRAINER_BATTLE_PARAM.opponentA = trainerId;
     SetBattleFacilityTrainerGfxId(TRAINER_BATTLE_PARAM.opponentA, 0);

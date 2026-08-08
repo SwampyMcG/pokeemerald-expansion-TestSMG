@@ -70,12 +70,18 @@ BattleFrontier_BattleTowerLobby_EventScript_WonChallenge::
 
 BattleFrontier_BattleTowerLobby_EventScript_DefeatedLeader::
 	msgbox BattleFrontier_BattleTowerLobby_Text_DefeatedLeader, MSGBOX_DEFAULT
+	goto BattleFrontier_BattleTowerLobby_EventScript_AwardLevelModeCap
+
+BattleFrontier_BattleTowerLobby_EventScript_DefeatedMaiden::
+	msgbox BattleFrontier_BattleTowerLobby_Text_CongratsDefeatedMaiden, MSGBOX_DEFAULT
+BattleFrontier_BattleTowerLobby_EventScript_AwardLevelModeCap::
+	frontier_get FRONTIER_DATA_LVL_MODE
+	goto_if_eq VAR_RESULT, FRONTIER_LVL_OPEN, BattleFrontier_BattleTowerLobby_EventScript_AwardGoldBottleCap
 	msgbox BattleFrontier_BattleTowerLobby_Text_AwardSilverBottleCap, MSGBOX_DEFAULT
 	giveitem ITEM_BOTTLE_CAP
 	goto BattleFrontier_BattleTowerLobby_EventScript_GiveRibbons
 
-BattleFrontier_BattleTowerLobby_EventScript_DefeatedMaiden::
-	msgbox BattleFrontier_BattleTowerLobby_Text_CongratsDefeatedMaiden, MSGBOX_DEFAULT
+BattleFrontier_BattleTowerLobby_EventScript_AwardGoldBottleCap::
 	msgbox BattleFrontier_BattleTowerLobby_Text_AwardGoldBottleCap, MSGBOX_DEFAULT
 	giveitem ITEM_GOLD_BOTTLE_CAP
 BattleFrontier_BattleTowerLobby_EventScript_GiveRibbons::
@@ -154,7 +160,11 @@ BattleFrontier_BattleTowerLobby_EventScript_EndSaveBattle::
 	return
 
 BattleFrontier_EventScript_GetCantRecordBattle::
-	frontier_get FRONTIER_DATA_RECORD_DISABLED
+	// Battle Recording prompts are retired in favor of the Facility Rankings screen - every
+	// facility's "record battle?"/"continue/record/rest/retire" prompt already branches on
+	// this single shared check, so forcing it TRUE quietly skips them all without touching
+	// each facility's script individually.
+	setvar VAR_RESULT, TRUE
 	return
 
 BattleFrontier_BattleTowerLobby_EventScript_ResumeChallenge::
