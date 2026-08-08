@@ -4,6 +4,7 @@
 #include "battle_ai_main.h"
 #include "battle_ai_record.h"
 #include "battle_arena.h"
+#include "battle_pike.h"
 #include "battle_controllers.h"
 #include "battle_end_turn.h"
 #include "battle_hold_effects.h"
@@ -3483,6 +3484,8 @@ static void DoBattleIntro(void)
 
             if (gBattleTypeFlags & BATTLE_TYPE_ARENA)
                 BattleArena_InitPoints();
+            if (gBattleTypeFlags & BATTLE_TYPE_PIKE)
+                Pike_TryInflictPendingConfusion();
         }
 
         if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)

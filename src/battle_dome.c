@@ -2109,6 +2109,65 @@ static void InitDomeTrainers(void)
         for (i = 0; i < FRONTIER_PARTY_SIZE; i++)
             DOME_MONS[j][i] = GetFrontierBrainMonSpecies(i);
     }
+    else
+    {
+        // No Frontier Brain this challenge - guarantee two Frontier Leaders instead, one
+        // seeded to tournament slot 0 and one to slot 1. sTrainerNamePositions always puts
+        // those two slots on opposite sides of the bracket (see the Frontier Brain
+        // placement above), so this puts one Leader on each side regardless of where the
+        // player gets seeded. If the player themselves earned the #1 or #2 seed, that slot
+        // is left alone rather than bumping them.
+        u16 leaderTrainerId1 = 0;
+
+        if (DOME_TRAINERS[0].trainerId != TRAINER_PLAYER)
+        {
+            leaderTrainerId1 = GetRandomFrontierLeaderTrainerId();
+            DOME_TRAINERS[0].trainerId = leaderTrainerId1;
+            for (j = 0; j < FRONTIER_PARTY_SIZE; j++)
+            {
+                do
+                {
+                    monId = GetRandomFrontierMonFromSet(leaderTrainerId1);
+                    for (k = 0; k < j; k++)
+                    {
+                        if (DOME_MONS[0][k] == monId
+                            || species[0] == gFacilityTrainerMons[monId].species
+                            || species[1] == gFacilityTrainerMons[monId].species)
+                            break;
+                    }
+                } while (k != j);
+                DOME_MONS[0][j] = monId;
+                species[j] = gFacilityTrainerMons[monId].species;
+            }
+        }
+
+        if (DOME_TRAINERS[1].trainerId != TRAINER_PLAYER)
+        {
+            u16 leaderTrainerId2;
+
+            do
+            {
+                leaderTrainerId2 = GetRandomFrontierLeaderTrainerId();
+            } while (leaderTrainerId2 == leaderTrainerId1);
+            DOME_TRAINERS[1].trainerId = leaderTrainerId2;
+            for (j = 0; j < FRONTIER_PARTY_SIZE; j++)
+            {
+                do
+                {
+                    monId = GetRandomFrontierMonFromSet(leaderTrainerId2);
+                    for (k = 0; k < j; k++)
+                    {
+                        if (DOME_MONS[1][k] == monId
+                            || species[0] == gFacilityTrainerMons[monId].species
+                            || species[1] == gFacilityTrainerMons[monId].species)
+                            break;
+                    }
+                } while (k != j);
+                DOME_MONS[1][j] = monId;
+                species[j] = gFacilityTrainerMons[monId].species;
+            }
+        }
+    }
 
     Free(rankingScores);
     Free(statValues);

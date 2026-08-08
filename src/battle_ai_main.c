@@ -30,6 +30,8 @@
 #include "constants/moves.h"
 #include "constants/items.h"
 #include "constants/trainers.h"
+#include "constants/pokemon.h"
+#include "constants/battle_frontier_trainers.h"
 
 #if TESTING
 #include "test/battle.h"
@@ -276,7 +278,20 @@ static u64 GetAiFlags(u16 trainerId, enum BattlerId battler)
         else if (gBattleTypeFlags & BATTLE_TYPE_FACTORY)
             flags = GetAiScriptsInBattleFactory();
         else if (gBattleTypeFlags & (BATTLE_TYPE_FRONTIER | BATTLE_TYPE_EREADER_TRAINER | BATTLE_TYPE_TRAINER_HILL | BATTLE_TYPE_SECRET_BASE))
-            flags = AI_FLAG_CHECK_BAD_MOVE | AI_FLAG_CHECK_VIABILITY | AI_FLAG_TRY_TO_FAINT;
+        {
+            // In Battle Palace's Open Level challenges, Frontier Leaders/Elite Four and
+            // the Frontier Brain play with the full smart AI instead of the flat baseline
+            // every other Frontier trainer gets - the Nature roll still decides their move
+            // *group* like everyone else (see ChooseMoveAndTargetInBattlePalace), but they
+            // pick the sharpest move within it. Scoped to Palace and Open Level only for now.
+            if ((gBattleTypeFlags & BATTLE_TYPE_PALACE)
+                && gSaveBlock2Ptr->frontier.lvlMode == FRONTIER_LVL_OPEN
+                && (trainerId == TRAINER_FRONTIER_BRAIN
+                    || (trainerId >= FRONTIER_TRAINER_BROCK && trainerId <= FRONTIER_TRAINER_VOLKNER)))
+                flags = AI_FLAG_SMART_TRAINER;
+            else
+                flags = AI_FLAG_CHECK_BAD_MOVE | AI_FLAG_CHECK_VIABILITY | AI_FLAG_TRY_TO_FAINT;
+        }
         else
             flags = GetTrainerAIFlagsFromId(trainerId);
     }
@@ -298,6 +313,31 @@ static u64 GetAiFlags(u16 trainerId, enum BattlerId battler)
         flags |= AI_FLAG_DYNAMIC_FUNC;
 
     return flags;
+}
+
+// In Battle Palace, the player's own Pokemon picks its own move too - see
+// ChooseMoveAndTargetInBattlePalace(). How well it plays within its Nature-rolled move
+// group scales with how much it trusts its trainer, using the same Affection Hearts
+// tiers already shown elsewhere (GetMonAffectionHearts) rather than a new scale.
+static u64 GetBattlePalacePlayerAiFlags(enum BattlerId battler)
+{
+    struct Pokemon *party = GetBattlerParty(battler);
+    struct Pokemon *mon = &party[gBattlerPartyIndexes[battler]];
+
+    switch (GetMonAffectionHearts(mon))
+    {
+    case AFFECTION_FIVE_HEARTS:
+    case AFFECTION_FOUR_HEARTS:
+        return AI_FLAG_SMART_TRAINER;
+    case AFFECTION_THREE_HEARTS:
+        return AI_FLAG_BASIC_TRAINER;
+    case AFFECTION_TWO_HEARTS:
+        return AI_FLAG_CHECK_BAD_MOVE | AI_FLAG_TRY_TO_FAINT;
+    case AFFECTION_ONE_HEART:
+        return AI_FLAG_CHECK_BAD_MOVE;
+    default:
+        return 0;
+    }
 }
 
 void BattleAI_SetupFlags(void)
@@ -354,6 +394,15 @@ void BattleAI_SetupFlags(void)
                     | GetAiFlags(TRAINER_BATTLE_PARAM.opponentB, B_BATTLER_3);
         gAiThinkingStruct->aiFlags[B_BATTLER_2] = aiFlags;
         gAiThinkingStruct->aiFlags[B_BATTLER_0] = aiFlags;
+    }
+
+    // Battle Palace: override whatever the player's battler(s) picked up above with a
+    // friendship-driven tier instead, regardless of which branch ran.
+    if (gBattleTypeFlags & BATTLE_TYPE_PALACE)
+    {
+        gAiThinkingStruct->aiFlags[B_BATTLER_0] = GetBattlePalacePlayerAiFlags(B_BATTLER_0);
+        if (IsDoubleBattle())
+            gAiThinkingStruct->aiFlags[B_BATTLER_2] = GetBattlePalacePlayerAiFlags(B_BATTLER_2);
     }
 }
 

@@ -64,6 +64,13 @@
 #define BATTLE_PIKE_FUNC_SAVE_HELD_ITEMS           26
 #define BATTLE_PIKE_FUNC_RESET_HELD_ITEMS          27
 #define BATTLE_PIKE_FUNC_INIT                      28
+#define BATTLE_PIKE_FUNC_GIVE_BONUS_POINTS         29
+
+// Amounts for BATTLE_PIKE_FUNC_GIVE_BONUS_POINTS (VAR_0x8005) - small flat rewards for
+// clearing a room type that's risky/costly rather than the run-ending payout.
+#define PIKE_BONUS_POINTS_CURSE_ROOM  1
+#define PIKE_BONUS_POINTS_HARD_BATTLE 2
+#define PIKE_BONUS_POINTS_DOUBLE_BATTLE 3
 
 #define PIKE_DATA_PRIZE             0
 #define PIKE_DATA_WIN_STREAK        1

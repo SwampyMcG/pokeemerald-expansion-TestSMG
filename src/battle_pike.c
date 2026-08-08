@@ -2,6 +2,7 @@
 #include "battle_pike.h"
 #include "event_data.h"
 #include "frontier_util.h"
+#include "string_util.h"
 #include "fieldmap.h"
 #include "save.h"
 #include "battle.h"
@@ -13,6 +14,8 @@
 #include "palette.h"
 #include "script.h"
 #include "battle_setup.h"
+#include "item.h"
+#include "daycare.h"
 #include "constants/event_objects.h"
 #include "constants/battle_frontier.h"
 #include "constants/frontier_util.h"
@@ -23,6 +26,7 @@
 #include "constants/moves.h"
 #include "constants/party_menu.h"
 #include "constants/battle_pike.h"
+#include "constants/items.h"
 
 struct PikeRoomNPC
 {
@@ -75,6 +79,7 @@ static void SetHealingroomTypesDisabled(void);
 static void IsPartyFullHealed(void);
 static void SaveMonHeldItems(void);
 static void RestoreMonHeldItems(void);
+static void GivePikeBonusPoints(void);
 static void InitPikeChallenge(void);
 static u8 GetNextRoomType(void);
 static void PrepareOneTrainer(bool8 difficult);
@@ -83,13 +88,19 @@ static void PrepareTwoTrainers(void);
 static void TryHealMons(u8 healCount);
 static void Task_DoStatusInflictionScreenFlash(u8 taskId);
 static bool8 AtLeastTwoAliveMons(void);
-static u8 SpeciesToPikeMonId(enum Species species);
+static bool8 AtLeastOneHealthyMon(void);
+static bool8 InflictPikeStatusCurse(void);
 static bool8 CanEncounterWildMon(u8 monLevel);
 static u8 GetPikeQueenFightType(u8);
 static bool8 StatusInflictionFadeOut(struct Task *task);
 static bool8 StatusInflictionFadeIn(struct Task *task);
 
 // Const rom data.
+// Each header table below is themed around the "signature" mon it used to be limited
+// to (Ghost/mystery, Electric/trap, Status spore, Psychic counter), now with a handful
+// of thematically-similar species alongside it instead of everything collapsing onto
+// that one signature mon. Seviper/Milotic remain as recurring anchors in every table -
+// SPECIES_NONE terminates each table so TryGenerateBattlePikeWildMon can count entries.
 static const struct PikeWildMon sLvl50_Mons1[] =
 {
     {
@@ -106,7 +117,23 @@ static const struct PikeWildMon sLvl50_Mons1[] =
         .species = SPECIES_DUSCLOPS,
         .levelDelta = 5,
         .moves = {MOVE_WILL_O_WISP, MOVE_MEAN_LOOK, MOVE_TOXIC, MOVE_SHADOW_PUNCH}
-    }
+    },
+    {
+        .species = SPECIES_SABLEYE,
+        .levelDelta = 5,
+        .moves = {MOVE_SHADOW_BALL, MOVE_KNOCK_OFF, MOVE_CONFUSE_RAY, MOVE_NIGHT_SHADE}
+    },
+    {
+        .species = SPECIES_SHUPPET,
+        .levelDelta = 5,
+        .moves = {MOVE_SHADOW_SNEAK, MOVE_WILL_O_WISP, MOVE_CURSE, MOVE_SHADOW_BALL}
+    },
+    {
+        .species = SPECIES_MISDREAVUS,
+        .levelDelta = 5,
+        .moves = {MOVE_SHADOW_BALL, MOVE_PERISH_SONG, MOVE_MEAN_LOOK, MOVE_CONFUSE_RAY}
+    },
+    {.species = SPECIES_NONE}
 };
 
 static const struct PikeWildMon sLvl50_Mons2[] =
@@ -125,7 +152,23 @@ static const struct PikeWildMon sLvl50_Mons2[] =
         .species = SPECIES_ELECTRODE,
         .levelDelta = 5,
         .moves = {MOVE_EXPLOSION, MOVE_SELF_DESTRUCT, MOVE_THUNDER, MOVE_TOXIC}
-    }
+    },
+    {
+        .species = SPECIES_MAGNETON,
+        .levelDelta = 5,
+        .moves = {MOVE_THUNDERBOLT, MOVE_SCREECH, MOVE_SUPERSONIC, MOVE_FLASH_CANNON}
+    },
+    {
+        .species = SPECIES_ELECTABUZZ,
+        .levelDelta = 5,
+        .moves = {MOVE_THUNDER_PUNCH, MOVE_LOW_KICK, MOVE_SWIFT, MOVE_THUNDER_WAVE}
+    },
+    {
+        .species = SPECIES_CHINCHOU,
+        .levelDelta = 5,
+        .moves = {MOVE_THUNDERBOLT, MOVE_SURF, MOVE_CONFUSE_RAY, MOVE_SPARK}
+    },
+    {.species = SPECIES_NONE}
 };
 
 static const struct PikeWildMon sLvl50_Mons3[] =
@@ -144,7 +187,23 @@ static const struct PikeWildMon sLvl50_Mons3[] =
         .species = SPECIES_BRELOOM,
         .levelDelta = 5,
         .moves = {MOVE_SPORE, MOVE_STUN_SPORE, MOVE_POISON_POWDER, MOVE_HIDDEN_POWER}
-    }
+    },
+    {
+        .species = SPECIES_VILEPLUME,
+        .levelDelta = 5,
+        .moves = {MOVE_SLEEP_POWDER, MOVE_STUN_SPORE, MOVE_MOONLIGHT, MOVE_GIGA_DRAIN}
+    },
+    {
+        .species = SPECIES_FOONGUS,
+        .levelDelta = 5,
+        .moves = {MOVE_SPORE, MOVE_TOXIC, MOVE_GIGA_DRAIN, MOVE_CLEAR_SMOG}
+    },
+    {
+        .species = SPECIES_PARASECT,
+        .levelDelta = 5,
+        .moves = {MOVE_SPORE, MOVE_STUN_SPORE, MOVE_LEECH_LIFE, MOVE_GIGA_DRAIN}
+    },
+    {.species = SPECIES_NONE}
 };
 
 static const struct PikeWildMon sLvl50_Mons4[] =
@@ -163,7 +222,23 @@ static const struct PikeWildMon sLvl50_Mons4[] =
         .species = SPECIES_WOBBUFFET,
         .levelDelta = 5,
         .moves = {MOVE_COUNTER, MOVE_MIRROR_COAT, MOVE_SAFEGUARD, MOVE_DESTINY_BOND}
-    }
+    },
+    {
+        .species = SPECIES_SPOINK,
+        .levelDelta = 5,
+        .moves = {MOVE_PSYCHIC, MOVE_COUNTER, MOVE_MIRROR_COAT, MOVE_TOXIC}
+    },
+    {
+        .species = SPECIES_GIRAFARIG,
+        .levelDelta = 5,
+        .moves = {MOVE_PSYCHIC, MOVE_CRUNCH, MOVE_CONFUSE_RAY, MOVE_BATON_PASS}
+    },
+    {
+        .species = SPECIES_SOLROCK,
+        .levelDelta = 5,
+        .moves = {MOVE_PSYCHIC, MOVE_EXPLOSION, MOVE_FLAMETHROWER, MOVE_COSMIC_POWER}
+    },
+    {.species = SPECIES_NONE}
 };
 
 static const struct PikeWildMon *const sLvl50Mons[] =
@@ -190,7 +265,23 @@ static const struct PikeWildMon sLvlOpen_Mons1[] =
         .species = SPECIES_DUSCLOPS,
         .levelDelta = 5,
         .moves = {MOVE_WILL_O_WISP, MOVE_MEAN_LOOK, MOVE_TOXIC, MOVE_ICE_BEAM}
-    }
+    },
+    {
+        .species = SPECIES_SABLEYE,
+        .levelDelta = 5,
+        .moves = {MOVE_SHADOW_BALL, MOVE_KNOCK_OFF, MOVE_CONFUSE_RAY, MOVE_RECOVER}
+    },
+    {
+        .species = SPECIES_BANETTE,
+        .levelDelta = 5,
+        .moves = {MOVE_SHADOW_BALL, MOVE_WILL_O_WISP, MOVE_KNOCK_OFF, MOVE_DESTINY_BOND}
+    },
+    {
+        .species = SPECIES_MISMAGIUS,
+        .levelDelta = 5,
+        .moves = {MOVE_SHADOW_BALL, MOVE_PERISH_SONG, MOVE_MEAN_LOOK, MOVE_WILL_O_WISP}
+    },
+    {.species = SPECIES_NONE}
 };
 
 static const struct PikeWildMon sLvlOpen_Mons2[] =
@@ -209,7 +300,23 @@ static const struct PikeWildMon sLvlOpen_Mons2[] =
         .species = SPECIES_ELECTRODE,
         .levelDelta = 5,
         .moves = {MOVE_EXPLOSION, MOVE_SELF_DESTRUCT, MOVE_THUNDER, MOVE_TOXIC}
-    }
+    },
+    {
+        .species = SPECIES_MAGNEZONE,
+        .levelDelta = 5,
+        .moves = {MOVE_THUNDERBOLT, MOVE_FLASH_CANNON, MOVE_TRI_ATTACK, MOVE_SCREECH}
+    },
+    {
+        .species = SPECIES_ELECTIVIRE,
+        .levelDelta = 5,
+        .moves = {MOVE_THUNDER_PUNCH, MOVE_ICE_PUNCH, MOVE_CROSS_CHOP, MOVE_THUNDER_WAVE}
+    },
+    {
+        .species = SPECIES_LANTURN,
+        .levelDelta = 5,
+        .moves = {MOVE_THUNDERBOLT, MOVE_SURF, MOVE_CONFUSE_RAY, MOVE_ICE_BEAM}
+    },
+    {.species = SPECIES_NONE}
 };
 
 static const struct PikeWildMon sLvlOpen_Mons3[] =
@@ -228,7 +335,23 @@ static const struct PikeWildMon sLvlOpen_Mons3[] =
         .species = SPECIES_BRELOOM,
         .levelDelta = 5,
         .moves = {MOVE_SPORE, MOVE_STUN_SPORE, MOVE_POISON_POWDER, MOVE_HIDDEN_POWER}
-    }
+    },
+    {
+        .species = SPECIES_VILEPLUME,
+        .levelDelta = 5,
+        .moves = {MOVE_SLEEP_POWDER, MOVE_STUN_SPORE, MOVE_MOONLIGHT, MOVE_SLUDGE_BOMB}
+    },
+    {
+        .species = SPECIES_AMOONGUSS,
+        .levelDelta = 5,
+        .moves = {MOVE_SPORE, MOVE_TOXIC, MOVE_GIGA_DRAIN, MOVE_CLEAR_SMOG}
+    },
+    {
+        .species = SPECIES_BRELOOM,
+        .levelDelta = 6,
+        .moves = {MOVE_SPORE, MOVE_MACH_PUNCH, MOVE_SEED_BOMB, MOVE_STUN_SPORE}
+    },
+    {.species = SPECIES_NONE}
 };
 
 static const struct PikeWildMon sLvlOpen_Mons4[] =
@@ -247,7 +370,23 @@ static const struct PikeWildMon sLvlOpen_Mons4[] =
         .species = SPECIES_WOBBUFFET,
         .levelDelta = 5,
         .moves = {MOVE_COUNTER, MOVE_MIRROR_COAT, MOVE_SAFEGUARD, MOVE_ENCORE}
-    }
+    },
+    {
+        .species = SPECIES_GRUMPIG,
+        .levelDelta = 5,
+        .moves = {MOVE_PSYCHIC, MOVE_COUNTER, MOVE_MIRROR_COAT, MOVE_TOXIC}
+    },
+    {
+        .species = SPECIES_GIRAFARIG,
+        .levelDelta = 5,
+        .moves = {MOVE_PSYCHIC, MOVE_CRUNCH, MOVE_CONFUSE_RAY, MOVE_BATON_PASS}
+    },
+    {
+        .species = SPECIES_LUNATONE,
+        .levelDelta = 5,
+        .moves = {MOVE_PSYCHIC, MOVE_ICE_BEAM, MOVE_EXPLOSION, MOVE_COSMIC_POWER}
+    },
+    {.species = SPECIES_NONE}
 };
 
 static const struct PikeWildMon *const sLvlOpenMons[] =
@@ -263,6 +402,77 @@ static const struct PikeWildMon *const *const sWildMons[2] =
     [FRONTIER_LVL_50]   = sLvl50Mons,
     [FRONTIER_LVL_OPEN] = sLvlOpenMons
 };
+
+// Rare "boss" encounters for the Wild Mons room - notably stronger, perfect-IV single
+// mons rolled at low odds instead of the normal per-header pool (see
+// TryGenerateBattlePikeWildMon). Kept separate from the tables above rather than mixed
+// in, so their odds can be tuned independently of the regular wild mon variety.
+static const struct PikeWildMon sBossMons50[] =
+{
+    {
+        .species = SPECIES_GYARADOS,
+        .levelDelta = 2,
+        .moves = {MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_ICE_FANG, MOVE_DRAGON_DANCE}
+    },
+    {
+        .species = SPECIES_STEELIX,
+        .levelDelta = 2,
+        .moves = {MOVE_EARTHQUAKE, MOVE_IRON_TAIL, MOVE_CRUNCH, MOVE_STEALTH_ROCK}
+    },
+    {
+        .species = SPECIES_TENTACRUEL,
+        .levelDelta = 2,
+        .moves = {MOVE_SURF, MOVE_SLUDGE_BOMB, MOVE_TOXIC_SPIKES, MOVE_RAPID_SPIN}
+    },
+    {
+        .species = SPECIES_CROBAT,
+        .levelDelta = 2,
+        .moves = {MOVE_CROSS_POISON, MOVE_AIR_SLASH, MOVE_TOXIC, MOVE_CONFUSE_RAY}
+    },
+    {
+        .species = SPECIES_ABSOL,
+        .levelDelta = 2,
+        .moves = {MOVE_NIGHT_SLASH, MOVE_SWORDS_DANCE, MOVE_SUCKER_PUNCH, MOVE_PURSUIT}
+    },
+};
+
+static const struct PikeWildMon sBossMonsOpen[] =
+{
+    {
+        .species = SPECIES_GYARADOS,
+        .levelDelta = 2,
+        .moves = {MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_ICE_FANG, MOVE_DRAGON_DANCE}
+    },
+    {
+        .species = SPECIES_STEELIX,
+        .levelDelta = 2,
+        .moves = {MOVE_EARTHQUAKE, MOVE_HEAVY_SLAM, MOVE_CRUNCH, MOVE_STEALTH_ROCK}
+    },
+    {
+        .species = SPECIES_TENTACRUEL,
+        .levelDelta = 2,
+        .moves = {MOVE_SURF, MOVE_SLUDGE_BOMB, MOVE_TOXIC_SPIKES, MOVE_RAPID_SPIN}
+    },
+    {
+        .species = SPECIES_CROBAT,
+        .levelDelta = 2,
+        .moves = {MOVE_CROSS_POISON, MOVE_AIR_SLASH, MOVE_TOXIC, MOVE_TAILWIND}
+    },
+    {
+        .species = SPECIES_ABSOL,
+        .levelDelta = 2,
+        .moves = {MOVE_NIGHT_SLASH, MOVE_SWORDS_DANCE, MOVE_SUCKER_PUNCH, MOVE_PLAY_ROUGH}
+    },
+};
+
+static const struct PikeWildMon *const sBossMons[2] =
+{
+    [FRONTIER_LVL_50]   = sBossMons50,
+    [FRONTIER_LVL_OPEN] = sBossMonsOpen
+};
+
+#define PIKE_BOSS_MON_ODDS 20 // 1-in-20 chance of a boss instead of the regular pool
+#define NUM_PIKE_BOSS_MONS 5  // sBossMons50 and sBossMonsOpen must each have this many entries
 
 static const struct PikeRoomNPC sNPCTable[] =
 {
@@ -506,7 +716,8 @@ static void (*const sBattlePikeFunctions[])(void) =
     [BATTLE_PIKE_FUNC_IS_PARTY_FULL_HEALTH]    = IsPartyFullHealed,
     [BATTLE_PIKE_FUNC_SAVE_HELD_ITEMS]         = SaveMonHeldItems,
     [BATTLE_PIKE_FUNC_RESET_HELD_ITEMS]        = RestoreMonHeldItems,
-    [BATTLE_PIKE_FUNC_INIT]                    = InitPikeChallenge
+    [BATTLE_PIKE_FUNC_INIT]                    = InitPikeChallenge,
+    [BATTLE_PIKE_FUNC_GIVE_BONUS_POINTS]       = GivePikeBonusPoints
 };
 
 static const u8 sRoomTypeHints[] = {
@@ -760,9 +971,98 @@ static void HealOneOrTwoMons(void)
     gSpecialVar_Result = toHeal;
 }
 
+// The NPC room used to be pure flavor text with no mechanical effect. It now has a
+// chance to actually hand out something - a rare-ball/treasure item, or an Egg.
+static const u16 sPikeTreasureItems[] =
+{
+    ITEM_FAST_BALL,
+    ITEM_LEVEL_BALL,
+    ITEM_LURE_BALL,
+    ITEM_HEAVY_BALL,
+    ITEM_LOVE_BALL,
+    ITEM_FRIEND_BALL,
+    ITEM_MOON_BALL,
+    ITEM_NUGGET,
+    ITEM_PEARL,
+    ITEM_BIG_PEARL,
+    ITEM_STARDUST,
+    ITEM_COMET_SHARD,
+    ITEM_NORMAL_TERA_SHARD,
+    ITEM_FIRE_TERA_SHARD,
+    ITEM_WATER_TERA_SHARD,
+    ITEM_ELECTRIC_TERA_SHARD,
+    ITEM_GRASS_TERA_SHARD,
+    ITEM_ICE_TERA_SHARD,
+    ITEM_FIGHTING_TERA_SHARD,
+    ITEM_POISON_TERA_SHARD,
+    ITEM_GROUND_TERA_SHARD,
+    ITEM_FLYING_TERA_SHARD,
+    ITEM_PSYCHIC_TERA_SHARD,
+    ITEM_BUG_TERA_SHARD,
+    ITEM_ROCK_TERA_SHARD,
+    ITEM_GHOST_TERA_SHARD,
+    ITEM_DRAGON_TERA_SHARD,
+    ITEM_DARK_TERA_SHARD,
+    ITEM_STEEL_TERA_SHARD,
+    ITEM_FAIRY_TERA_SHARD,
+};
+
+static const u16 sPikeEggSpecies[] =
+{
+    SPECIES_MAGIKARP,
+    SPECIES_EEVEE,
+    SPECIES_TOGEPI,
+    SPECIES_RALTS,
+    SPECIES_BAGON,
+    SPECIES_DRATINI,
+    SPECIES_GIBLE,
+    SPECIES_RIOLU,
+};
+
+#define PIKE_NPC_REWARD_ODDS 6 // 1-in-6 chance the NPC room's visitor has something for you
+
+static const u8 sText_PikeFoundTreasure[] = _("Oh? What's this glinting on the floor?\pA {STR_VAR_1}! Lucky find - it's yours.$");
+static const u8 sText_PikeFoundEgg[] = _("Oh my, what do we have here?\pA POKéMON EGG! Someone must have left\nit behind. Go on, it's yours now.$");
+
+// Returns TRUE and buffers a reward message into gStringVar4 if the room's visitor had
+// something to give. The Egg goes straight to the PC, never the in-challenge party - the
+// player's real party is swapped out for just the selected challenge mons for the
+// duration of the run, so writing into gParties[B_TRAINER_PLAYER] here would either get
+// lost or corrupt that temporary roster.
+static bool8 TryGivePikeRoomTreasure(void)
+{
+    if (Random() % PIKE_NPC_REWARD_ODDS != 0)
+        return FALSE;
+
+    if (Random() % 2 == 0)
+    {
+        u16 item = sPikeTreasureItems[Random() % ARRAY_COUNT(sPikeTreasureItems)];
+        if (AddBagItem(item, 1) != TRUE)
+            return FALSE; // Bag full - fall back to ordinary flavor text instead.
+        CopyItemName(item, gStringVar1);
+        StringExpandPlaceholders(gStringVar4, sText_PikeFoundTreasure);
+    }
+    else
+    {
+        enum Species species = sPikeEggSpecies[Random() % ARRAY_COUNT(sPikeEggSpecies)];
+        struct Pokemon egg;
+        bool8 isEgg = TRUE;
+
+        CreateEgg(&egg, species, TRUE);
+        SetMonData(&egg, MON_DATA_IS_EGG, &isEgg);
+        CopyMonToPC(&egg);
+        StringExpandPlaceholders(gStringVar4, sText_PikeFoundEgg);
+    }
+
+    return TRUE;
+}
+
 static void BufferNPCMessage(void)
 {
     int speechId;
+
+    if (TryGivePikeRoomTreasure())
+        return;
 
     if (gSaveBlock2Ptr->frontier.curChallengeBattleNum <= 4)
         speechId = sNPCTable[sNpcId].speechId1;
@@ -875,7 +1175,69 @@ static bool8 DoesTypePreventStatus(enum Species species, u32 status)
     return ret;
 }
 
+// Drains half the current PP (rounded down) of the first eligible move found on a
+// random living party mon. Unlike the STATUS1 curses below, this doesn't need a
+// type/ability immunity check - PP loss has no such counterplay.
+static bool8 TryInflictPikePPDrain(void)
+{
+    u8 i, moveSlot;
+    u8 indices[FRONTIER_PARTY_SIZE];
+    struct Pokemon *mon;
+
+    for (i = 0; i < FRONTIER_PARTY_SIZE; i++)
+        indices[i] = i;
+    Shuffle(indices, FRONTIER_PARTY_SIZE, sizeof(indices[0]));
+
+    for (i = 0; i < FRONTIER_PARTY_SIZE; i++)
+    {
+        mon = &gParties[B_TRAINER_PLAYER][indices[i]];
+        if (GetMonData(mon, MON_DATA_HP) == 0)
+            continue;
+
+        for (moveSlot = 0; moveSlot < MAX_MON_MOVES; moveSlot++)
+        {
+            u16 move = GetMonData(mon, MON_DATA_MOVE1 + moveSlot);
+            u16 pp = GetMonData(mon, MON_DATA_PP1 + moveSlot);
+            if (move != MOVE_NONE && pp > 0)
+            {
+                u16 newPP = pp / 2;
+                SetMonData(mon, MON_DATA_PP1 + moveSlot, &newPP);
+                sStatusMon = PIKE_STATUSMON_KIRLIA;
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+// Confusion can't be pre-set on a party mon like a STATUS1 condition - it's a
+// battle-only volatile. Instead, flag it and let the player's next Pike battle apply
+// it once battlers actually exist, via Pike_TryInflictPendingConfusion (called from
+// battle_main.c's intro sequence the same way BattleArena_InitPoints already is).
+static bool8 TryInflictPikeConfusionCurse(void)
+{
+    if (!AtLeastOneHealthyMon())
+        return FALSE;
+
+    gSaveBlock2Ptr->frontier.pikePendingConfusion = TRUE;
+    sStatusMon = PIKE_STATUSMON_KIRLIA;
+    return TRUE;
+}
+
+// Small BP top-up for surviving whichever curse actually landed - see
+// GivePikeBonusPoints for the run-ending payout this is separate from.
 static bool8 TryInflictRandomStatus(void)
+{
+    if (!InflictPikeStatusCurse())
+        return FALSE;
+
+    gSaveBlock2Ptr->frontier.battlePoints += PIKE_BONUS_POINTS_CURSE_ROOM;
+    if (gSaveBlock2Ptr->frontier.battlePoints > MAX_BATTLE_FRONTIER_POINTS)
+        gSaveBlock2Ptr->frontier.battlePoints = MAX_BATTLE_FRONTIER_POINTS;
+    return TRUE;
+}
+
+static bool8 InflictPikeStatusCurse(void)
 {
     u8 j, i;
     u8 count;
@@ -884,6 +1246,14 @@ static bool8 TryInflictRandomStatus(void)
     enum Species species;
     bool8 statusChosen;
     struct Pokemon *mon;
+    u8 curseRoll = Random() % 100;
+
+    // PP-drain and confusion sit outside the STATUS1 pool below (respectively 12% and
+    // 8% of curse rolls), and don't participate in its type/ability immunity checks.
+    if (curseRoll < 12)
+        return TryInflictPikePPDrain();
+    else if (curseRoll < 20)
+        return TryInflictPikeConfusionCurse();
 
     for (i = 0; i < FRONTIER_PARTY_SIZE; i++)
         indices[i] = i;
@@ -1111,9 +1481,24 @@ bool32 TryGenerateBattlePikeWildMon(bool8 checkKeenEyeIntimidate)
     u8 headerId = GetBattlePikeWildMonHeaderId();
     enum FrontierLevelMode lvlMode = gSaveBlock2Ptr->frontier.lvlMode;
     const struct PikeWildMon *const *const wildMons = sWildMons[lvlMode];
+    const struct PikeWildMon *chosenMon;
+    struct Pokemon *mon = &gParties[B_TRAINER_OPPONENT_A][0];
     u32 abilityNum;
-    s32 pikeMonId = GetMonData(&gParties[B_TRAINER_OPPONENT_A][0], MON_DATA_SPECIES);
-    pikeMonId = SpeciesToPikeMonId(pikeMonId);
+    // Rare "boss" encounter instead of the room's regular pool - see sBossMons above.
+    bool8 isBoss = ((Random() % PIKE_BOSS_MON_ODDS) == 0);
+
+    if (isBoss)
+    {
+        chosenMon = &sBossMons[lvlMode][Random() % NUM_PIKE_BOSS_MONS];
+    }
+    else
+    {
+        u8 numMons;
+
+        for (numMons = 0; wildMons[headerId][numMons].species != SPECIES_NONE; numMons++)
+            ;
+        chosenMon = &wildMons[headerId][Random() % numMons];
+    }
 
     if (gSaveBlock2Ptr->frontier.lvlMode != FRONTIER_LVL_50)
     {
@@ -1124,32 +1509,38 @@ bool32 TryGenerateBattlePikeWildMon(bool8 checkKeenEyeIntimidate)
         }
         else
         {
-            monLevel -= wildMons[headerId][pikeMonId].levelDelta;
+            monLevel -= chosenMon->levelDelta;
             if (monLevel < FRONTIER_MIN_LEVEL_OPEN)
                 monLevel = FRONTIER_MIN_LEVEL_OPEN;
         }
     }
     else
     {
-        monLevel = FRONTIER_MAX_LEVEL_50 - wildMons[headerId][pikeMonId].levelDelta;
+        monLevel = FRONTIER_MAX_LEVEL_50 - chosenMon->levelDelta;
     }
 
     if (checkKeenEyeIntimidate == TRUE && !CanEncounterWildMon(monLevel))
         return FALSE;
 
-    SetMonData(&gParties[B_TRAINER_OPPONENT_A][0],
-               MON_DATA_EXP,
-               &gExperienceTables[gSpeciesInfo[wildMons[headerId][pikeMonId].species].growthRate][monLevel]);
+    SetMonData(mon, MON_DATA_SPECIES, &chosenMon->species);
+    SetMonData(mon, MON_DATA_EXP, &gExperienceTables[gSpeciesInfo[chosenMon->species].growthRate][monLevel]);
 
-    if (GetSpeciesAbility(wildMons[headerId][pikeMonId].species, 1))
+    if (GetSpeciesAbility(chosenMon->species, 1))
         abilityNum = Random() % 2;
     else
         abilityNum = 0;
-    SetMonData(&gParties[B_TRAINER_OPPONENT_A][0], MON_DATA_ABILITY_NUM, &abilityNum);
+    SetMonData(mon, MON_DATA_ABILITY_NUM, &abilityNum);
     for (i = 0; i < MAX_MON_MOVES; i++)
-        SetMonMoveSlot(&gParties[B_TRAINER_OPPONENT_A][0], wildMons[headerId][pikeMonId].moves[i], i);
+        SetMonMoveSlot(mon, chosenMon->moves[i], i);
 
-    CalculateMonStats(&gParties[B_TRAINER_OPPONENT_A][0]);
+    if (isBoss)
+    {
+        u8 perfectIV = MAX_PER_STAT_IVS;
+        for (i = 0; i < NUM_STATS; i++)
+            SetMonData(mon, MON_DATA_HP_IV + i, &perfectIV);
+    }
+
+    CalculateMonStats(mon);
     return TRUE;
 }
 
@@ -1325,6 +1716,25 @@ bool8 InBattlePike(void)
         || gMapHeader.mapLayoutId == LAYOUT_BATTLE_FRONTIER_BATTLE_PIKE_ROOM_UNUSED;
 }
 
+// Consumes a pending confusion curse from a Status room (see TryInflictPikeConfusionCurse)
+// by confusing whichever Pokemon the player actually sends out, once battlers exist to
+// confuse. Called from battle_main.c's intro sequence, mirroring how BattleArena_InitPoints
+// is already hooked in for the Arena.
+void Pike_TryInflictPendingConfusion(void)
+{
+    enum BattlerId battler;
+
+    if (!gSaveBlock2Ptr->frontier.pikePendingConfusion)
+        return;
+    gSaveBlock2Ptr->frontier.pikePendingConfusion = FALSE;
+
+    for (battler = 0; battler < gBattlersCount; battler++)
+    {
+        if (IsOnPlayerSide(battler))
+            gBattleMons[battler].volatiles.confusionTurns = RandomUniform(RNG_CONFUSION_TURNS, 2, B_CONFUSION_TURNS);
+    }
+}
+
 static void SetHintedRoom(void)
 {
     u8 i, count, id;
@@ -1395,7 +1805,12 @@ static void PrepareOneTrainer(bool8 difficult)
     challengeNum = gSaveBlock2Ptr->frontier.pikeWinStreaks[lvlMode] / NUM_PIKE_ROOMS;
     do
     {
-        trainerId = GetRandomScaledFrontierTrainerId(challengeNum, battleNum);
+        // Hard Battle rooms go to a Frontier Leader instead of a random "hard tier"
+        // trainer - same idea as the round-7 slot in Tower/Factory/Palace.
+        if (difficult)
+            trainerId = GetRandomFrontierLeaderTrainerId();
+        else
+            trainerId = GetRandomScaledFrontierTrainerId(challengeNum, battleNum);
         for (i = 0; i < gSaveBlock2Ptr->frontier.curChallengeBattleNum - 1; i++)
         {
             if (gSaveBlock2Ptr->frontier.trainerIds[i] == trainerId)
@@ -1464,12 +1879,12 @@ static void BufferTrainerIntro(void)
     if (gSpecialVar_0x8005 == 0)
     {
         if (TRAINER_BATTLE_PARAM.opponentA < FRONTIER_TRAINERS_COUNT)
-            FrontierSpeechToString(gFacilityTrainers[TRAINER_BATTLE_PARAM.opponentA].speechBefore);
+            CopyFrontierTrainerSpeech(gStringVar4, gFacilityTrainers[TRAINER_BATTLE_PARAM.opponentA].facilityClass, FRONTIER_SPEECH_BEFORE);
     }
     else if (gSpecialVar_0x8005 == 1)
     {
         if (TRAINER_BATTLE_PARAM.opponentB < FRONTIER_TRAINERS_COUNT)
-            FrontierSpeechToString(gFacilityTrainers[TRAINER_BATTLE_PARAM.opponentB].speechBefore);
+            CopyFrontierTrainerSpeech(gStringVar4, gFacilityTrainers[TRAINER_BATTLE_PARAM.opponentB].facilityClass, FRONTIER_SPEECH_BEFORE);
     }
 }
 
@@ -1605,6 +2020,17 @@ static void RestoreMonHeldItems(void)
     }
 }
 
+// Flat, immediate Battle Points top-up for clearing a risky room (Status curse, Hard
+// Battle, Double Battle) - separate from the run-ending payout given by
+// frontier_givepoints. Amount comes in via VAR_0x8005 (see PIKE_BONUS_POINTS_* in
+// constants/battle_pike.h).
+static void GivePikeBonusPoints(void)
+{
+    gSaveBlock2Ptr->frontier.battlePoints += gSpecialVar_0x8005;
+    if (gSaveBlock2Ptr->frontier.battlePoints > MAX_BATTLE_FRONTIER_POINTS)
+        gSaveBlock2Ptr->frontier.battlePoints = MAX_BATTLE_FRONTIER_POINTS;
+}
+
 static void InitPikeChallenge(void)
 {
     enum FrontierLevelMode lvlMode = gSaveBlock2Ptr->frontier.lvlMode;
@@ -1633,18 +2059,4 @@ static bool8 CanEncounterWildMon(u8 enemyMonLevel)
     }
 
     return TRUE;
-}
-
-static u8 SpeciesToPikeMonId(enum Species species)
-{
-    u8 ret;
-
-    if (species == SPECIES_SEVIPER)
-        ret = 0;
-    else if (species == SPECIES_MILOTIC)
-        ret = 1;
-    else
-        ret = 2;
-
-    return ret;
 }

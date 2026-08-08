@@ -41,13 +41,23 @@ BattleFrontier_BattleFactoryLobby_EventScript_WonChallenge::
 	lockall
 	frontier_isbrain
 	goto_if_eq VAR_RESULT, TRUE, BattleFrontier_BattleFactoryLobby_EventScript_DefeatedFactoryHead
+	frontier_isleader
+	goto_if_eq VAR_RESULT, TRUE, BattleFrontier_BattleFactoryLobby_EventScript_DefeatedLeader
 	msgbox BattleFrontier_BattleFactoryLobby_Text_CongratsSevenWins, MSGBOX_DEFAULT
 	waitmessage
+	goto BattleFrontier_BattleFactoryLobby_EventScript_GiveBattlePoints
+
+BattleFrontier_BattleFactoryLobby_EventScript_DefeatedLeader::
+	msgbox BattleFrontier_BattleFactoryLobby_Text_DefeatedLeader, MSGBOX_DEFAULT
+	msgbox BattleFrontier_BattleFactoryLobby_Text_AwardSilverBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_BOTTLE_CAP
 	goto BattleFrontier_BattleFactoryLobby_EventScript_GiveBattlePoints
 
 BattleFrontier_BattleFactoryLobby_EventScript_DefeatedFactoryHead::
 	msgbox BattleFrontier_BattleFactoryLobby_Text_CongratsForDefeatingHead, MSGBOX_DEFAULT
 	waitmessage
+	msgbox BattleFrontier_BattleFactoryLobby_Text_AwardGoldBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_GOLD_BOTTLE_CAP
 BattleFrontier_BattleFactoryLobby_EventScript_GiveBattlePoints::
 	msgbox BattleFrontier_BattleFactoryLobby_Text_AwardBattlePoints, MSGBOX_DEFAULT
 	frontier_givepoints
@@ -385,6 +395,19 @@ BattleFrontier_BattleFactoryLobby_Text_ReturnMons:
 BattleFrontier_BattleFactoryLobby_Text_CongratsSevenWins:
 	.string "Congratulations! You've won seven\n"
 	.string "straight Battle Swap matches!$"
+
+BattleFrontier_BattleFactoryLobby_Text_DefeatedLeader:
+	.string "Incredible! You've defeated a visiting\n"
+	.string "GYM LEADER!\p"
+	.string "$"
+
+BattleFrontier_BattleFactoryLobby_Text_AwardSilverBottleCap:
+	.string "As a token of that victory, please\n"
+	.string "take this.$"
+
+BattleFrontier_BattleFactoryLobby_Text_AwardGoldBottleCap:
+	.string "And for defeating a FRONTIER BRAIN,\n"
+	.string "please take this as well.$"
 
 @ Unused
 BattleFrontier_BattleFactoryLobby_Text_AwardBattlePointsForStreak:

@@ -185,79 +185,92 @@ struct StarterCandidate
     u16 species;
     u8  level;
     u16 moves[MAX_MON_MOVES]; // MOVE_NONE entries are skipped
+    u8  ivs[NUM_STATS];       // 0-31 per stat, order: HP/Atk/Def/Spe/SpA/SpD (STAT_ enum order)
+    u8  evs[NUM_STATS];       // 0-252 per stat, same order
 };
 
-// DUMMY DATA — placeholder species/moves/level so the table compiles and the
-// screen is fully testable end to end. Replace species/level/moves per-slot
-// with your real picks; keep the count a multiple of STARTER_MONS_PER_PAGE.
+// Reusable IV/EV spreads for the table below (HP/Atk/Def/Spe/SpA/SpD order).
+// Swap a slot's preset, or write a one-off {..} literal in its place, to
+// customize an individual mon.
+#define IVS_PERFECT          {31,  31,  31,  31,  31,  31}
+#define EVS_PHYSICAL_SWEEPER {0,   252, 4,   252, 0,   0}
+#define EVS_SPECIAL_SWEEPER  {0,   0,   0,   252, 252, 4}
+#define EVS_BULKY_PHYSICAL   {252, 0,   252, 0,   0,   4}
+#define EVS_BULKY_SPECIAL    {252, 0,   4,   0,   0,   252}
+
+// Final-evolution starters from every generation (1-9), plus a back half of
+// popular non-legendary Pokémon with competitive-style 4-move sets. Moves are
+// applied directly via SetMonMoveSlot, not the level-up learnset, so movesets
+// here aren't constrained to what the mon could normally have at once.
 static const struct StarterCandidate sStarterSelectMons[STARTER_TOTAL_MONS] =
 {
-    // --- Page 0 ---
-    [0]  = { SPECIES_BULBASAUR,   50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [1]  = { SPECIES_CHARMANDER,  50, {MOVE_SCRATCH, MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [2]  = { SPECIES_SQUIRTLE,    50, {MOVE_TACKLE,  MOVE_TAIL_WHIP, MOVE_NONE, MOVE_NONE} },
-    [3]  = { SPECIES_CHIKORITA,   50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [4]  = { SPECIES_CYNDAQUIL,   50, {MOVE_TACKLE,  MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
-    [5]  = { SPECIES_TOTODILE,    50, {MOVE_SCRATCH, MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
+    // --- Page 0: Gen 1-2 starters ---
+    [0]  = { SPECIES_VENUSAUR,    50, {MOVE_GIGA_DRAIN,  MOVE_SLUDGE_BOMB,   MOVE_SLEEP_POWDER, MOVE_EARTHQUAKE}, IVS_PERFECT, EVS_BULKY_SPECIAL },
+    [1]  = { SPECIES_CHARIZARD,   50, {MOVE_FLAMETHROWER, MOVE_AIR_SLASH,    MOVE_DRAGON_PULSE, MOVE_ROOST}, IVS_PERFECT, EVS_SPECIAL_SWEEPER },
+    [2]  = { SPECIES_BLASTOISE,   50, {MOVE_SCALD,       MOVE_ICE_BEAM,      MOVE_RAPID_SPIN,   MOVE_EARTHQUAKE}, IVS_PERFECT, EVS_BULKY_SPECIAL },
+    [3]  = { SPECIES_MEGANIUM,    50, {MOVE_LEECH_SEED,  MOVE_SYNTHESIS,     MOVE_BODY_SLAM,    MOVE_EARTHQUAKE}, IVS_PERFECT, EVS_BULKY_PHYSICAL },
+    [4]  = { SPECIES_TYPHLOSION,  50, {MOVE_FLAMETHROWER, MOVE_FOCUS_BLAST,  MOVE_SHADOW_BALL,  MOVE_EXTRASENSORY}, IVS_PERFECT, EVS_SPECIAL_SWEEPER },
+    [5]  = { SPECIES_FERALIGATR,  50, {MOVE_WATERFALL,   MOVE_ICE_PUNCH,     MOVE_CRUNCH,       MOVE_SWORDS_DANCE}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
 
-    // --- Page 1 ---
-    [6]  = { SPECIES_TREECKO,     50, {MOVE_POUND,   MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
-    [7]  = { SPECIES_TORCHIC,     50, {MOVE_SCRATCH, MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [8]  = { SPECIES_MUDKIP,      50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [9]  = { SPECIES_TURTWIG,     50, {MOVE_TACKLE,  MOVE_WITHDRAW,  MOVE_NONE, MOVE_NONE} },
-    [10] = { SPECIES_CHIMCHAR,    50, {MOVE_SCRATCH, MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
-    [11] = { SPECIES_PIPLUP,      50, {MOVE_POUND,   MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    // --- Page 1: Gen 3-4 starters ---
+    [6]  = { SPECIES_SCEPTILE,    50, {MOVE_LEAF_BLADE,  MOVE_DRAGON_CLAW,   MOVE_ROCK_SLIDE,   MOVE_EARTHQUAKE}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [7]  = { SPECIES_BLAZIKEN,    50, {MOVE_FLARE_BLITZ, MOVE_CLOSE_COMBAT,  MOVE_KNOCK_OFF,    MOVE_SWORDS_DANCE}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [8]  = { SPECIES_SWAMPERT,    50, {MOVE_EARTHQUAKE,  MOVE_WATERFALL,     MOVE_ICE_PUNCH,    MOVE_STEALTH_ROCK}, IVS_PERFECT, EVS_BULKY_PHYSICAL },
+    [9]  = { SPECIES_TORTERRA,    50, {MOVE_WOOD_HAMMER, MOVE_EARTHQUAKE,    MOVE_ROCK_SLIDE,   MOVE_STEALTH_ROCK}, IVS_PERFECT, EVS_BULKY_PHYSICAL },
+    [10] = { SPECIES_INFERNAPE,   50, {MOVE_CLOSE_COMBAT, MOVE_FLARE_BLITZ,  MOVE_MACH_PUNCH,   MOVE_U_TURN}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [11] = { SPECIES_EMPOLEON,    50, {MOVE_SCALD,       MOVE_FLASH_CANNON,  MOVE_ICE_BEAM,     MOVE_ROOST}, IVS_PERFECT, EVS_BULKY_SPECIAL },
 
-    // --- Page 2 ---
-    [12] = { SPECIES_SNIVY,       50, {MOVE_TACKLE,  MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
-    [13] = { SPECIES_TEPIG,       50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [14] = { SPECIES_OSHAWOTT,    50, {MOVE_TACKLE,  MOVE_TAIL_WHIP, MOVE_NONE, MOVE_NONE} },
-    [15] = { SPECIES_CHESPIN,     50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [16] = { SPECIES_FENNEKIN,    50, {MOVE_SCRATCH, MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [17] = { SPECIES_FROAKIE,     50, {MOVE_POUND,   MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    // --- Page 2: Gen 5-6 starters ---
+    [12] = { SPECIES_SERPERIOR,   50, {MOVE_LEAF_STORM,  MOVE_GIGA_DRAIN,    MOVE_SUBSTITUTE,   MOVE_GLARE}, IVS_PERFECT, EVS_SPECIAL_SWEEPER },
+    [13] = { SPECIES_EMBOAR,      50, {MOVE_FLARE_BLITZ, MOVE_WILD_CHARGE,   MOVE_HEAD_SMASH,   MOVE_EARTHQUAKE}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [14] = { SPECIES_SAMUROTT,    50, {MOVE_WATERFALL,   MOVE_MEGAHORN,      MOVE_AQUA_JET,     MOVE_SWORDS_DANCE}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [15] = { SPECIES_CHESNAUGHT,  50, {MOVE_SPIKY_SHIELD, MOVE_WOOD_HAMMER,  MOVE_DRAIN_PUNCH,  MOVE_KNOCK_OFF}, IVS_PERFECT, EVS_BULKY_PHYSICAL },
+    [16] = { SPECIES_DELPHOX,     50, {MOVE_FIRE_BLAST,  MOVE_PSYCHIC,       MOVE_GRASS_KNOT,   MOVE_NASTY_PLOT}, IVS_PERFECT, EVS_SPECIAL_SWEEPER },
+    [17] = { SPECIES_GRENINJA,    50, {MOVE_HYDRO_PUMP,  MOVE_DARK_PULSE,    MOVE_ICE_BEAM,     MOVE_U_TURN}, IVS_PERFECT, EVS_SPECIAL_SWEEPER },
 
-    // --- Page 3 ---
-    [18] = { SPECIES_ROWLET,      50, {MOVE_TACKLE,  MOVE_LEAFAGE,   MOVE_NONE, MOVE_NONE} },
-    [19] = { SPECIES_LITTEN,      50, {MOVE_SCRATCH, MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
-    [20] = { SPECIES_POPPLIO,     50, {MOVE_POUND,   MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [21] = { SPECIES_GROOKEY,     50, {MOVE_SCRATCH, MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [22] = { SPECIES_SCORBUNNY,   50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [23] = { SPECIES_SOBBLE,      50, {MOVE_POUND,   MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
+    // --- Page 3: Gen 7-8 starters ---
+    [18] = { SPECIES_DECIDUEYE,   50, {MOVE_SPIRIT_SHACKLE, MOVE_LEAF_BLADE, MOVE_SHADOW_SNEAK, MOVE_SWORDS_DANCE}, IVS_PERFECT, EVS_BULKY_PHYSICAL },
+    [19] = { SPECIES_INCINEROAR,  50, {MOVE_FLARE_BLITZ, MOVE_KNOCK_OFF,     MOVE_U_TURN,       MOVE_FAKE_OUT}, IVS_PERFECT, EVS_BULKY_PHYSICAL },
+    [20] = { SPECIES_PRIMARINA,   50, {MOVE_MOONBLAST,   MOVE_HYDRO_PUMP,    MOVE_PSYCHIC,      MOVE_ENERGY_BALL}, IVS_PERFECT, EVS_BULKY_SPECIAL },
+    [21] = { SPECIES_RILLABOOM,   50, {MOVE_GRASSY_GLIDE, MOVE_WOOD_HAMMER,  MOVE_U_TURN,       MOVE_KNOCK_OFF}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [22] = { SPECIES_CINDERACE,   50, {MOVE_PYRO_BALL,   MOVE_U_TURN,        MOVE_HIGH_JUMP_KICK, MOVE_SUCKER_PUNCH}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [23] = { SPECIES_INTELEON,    50, {MOVE_SNIPE_SHOT,  MOVE_ICE_BEAM,      MOVE_U_TURN,       MOVE_DARK_PULSE}, IVS_PERFECT, EVS_SPECIAL_SWEEPER },
 
-    // --- Page 4 ---
-    [24] = { SPECIES_PIKACHU,     50, {MOVE_THUNDER_SHOCK, MOVE_GROWL, MOVE_NONE, MOVE_NONE} },
-    [25] = { SPECIES_EEVEE,       50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [26] = { SPECIES_RIOLU,       50, {MOVE_QUICK_ATTACK, MOVE_FORESIGHT, MOVE_NONE, MOVE_NONE} },
-    [27] = { SPECIES_GIBLE,       50, {MOVE_TACKLE,  MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
-    [28] = { SPECIES_DRATINI,     50, {MOVE_WRAP,    MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
-    [29] = { SPECIES_LARVITAR,    50, {MOVE_BITE,    MOVE_LEER,      MOVE_NONE, MOVE_NONE} },
+    // --- Page 4: Gen 9 starters + fan favorites ---
+    [24] = { SPECIES_MEOWSCARADA, 50, {MOVE_FLOWER_TRICK, MOVE_KNOCK_OFF,    MOVE_U_TURN,       MOVE_SUCKER_PUNCH}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [25] = { SPECIES_SKELEDIRGE,  50, {MOVE_TORCH_SONG,  MOVE_SHADOW_BALL,   MOVE_SLACK_OFF,    MOVE_WILL_O_WISP}, IVS_PERFECT, EVS_BULKY_SPECIAL },
+    [26] = { SPECIES_QUAQUAVAL,   50, {MOVE_AQUA_STEP,   MOVE_CLOSE_COMBAT,  MOVE_KNOCK_OFF,    MOVE_ICE_SPINNER}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [27] = { SPECIES_GENGAR,      50, {MOVE_SHADOW_BALL, MOVE_SLUDGE_WAVE,   MOVE_FOCUS_BLAST,  MOVE_NASTY_PLOT}, IVS_PERFECT, EVS_SPECIAL_SWEEPER },
+    [28] = { SPECIES_DRAGONITE,   50, {MOVE_DRAGON_DANCE, MOVE_EXTREME_SPEED, MOVE_EARTHQUAKE,  MOVE_FIRE_PUNCH}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [29] = { SPECIES_TYRANITAR,   50, {MOVE_STONE_EDGE,  MOVE_CRUNCH,        MOVE_EARTHQUAKE,   MOVE_FIRE_PUNCH}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
 
-    // --- Page 5 ---
-    [30] = { SPECIES_ABRA,        50, {MOVE_TELEPORT, MOVE_NONE,     MOVE_NONE, MOVE_NONE} },
-    [31] = { SPECIES_MACHOP,      50, {MOVE_LOW_KICK, MOVE_LEER,     MOVE_NONE, MOVE_NONE} },
-    [32] = { SPECIES_GASTLY,      50, {MOVE_LICK,    MOVE_HYPNOSIS,  MOVE_NONE, MOVE_NONE} },
-    [33] = { SPECIES_MAGNEMITE,   50, {MOVE_TACKLE,  MOVE_THUNDER_SHOCK, MOVE_NONE, MOVE_NONE} },
-    [34] = { SPECIES_SCYTHER,     50, {MOVE_QUICK_ATTACK, MOVE_LEER, MOVE_NONE, MOVE_NONE} },
-    [35] = { SPECIES_ONIX,        50, {MOVE_TACKLE,  MOVE_HARDEN,    MOVE_NONE, MOVE_NONE} },
+    // --- Page 5: fan favorites ---
+    [30] = { SPECIES_METAGROSS,   50, {MOVE_METEOR_MASH, MOVE_ZEN_HEADBUTT,  MOVE_EARTHQUAKE,   MOVE_BULLET_PUNCH}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [31] = { SPECIES_GARCHOMP,    50, {MOVE_OUTRAGE,     MOVE_EARTHQUAKE,    MOVE_STONE_EDGE,   MOVE_SWORDS_DANCE}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [32] = { SPECIES_LUCARIO,     50, {MOVE_CLOSE_COMBAT, MOVE_EXTREME_SPEED, MOVE_ICE_PUNCH,   MOVE_SWORDS_DANCE}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [33] = { SPECIES_GARDEVOIR,   50, {MOVE_MOONBLAST,   MOVE_PSYSHOCK,      MOVE_SHADOW_BALL,  MOVE_CALM_MIND}, IVS_PERFECT, EVS_SPECIAL_SWEEPER },
+    [34] = { SPECIES_SALAMENCE,   50, {MOVE_DRAGON_DANCE, MOVE_OUTRAGE,      MOVE_EARTHQUAKE,   MOVE_FIRE_FANG}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [35] = { SPECIES_SCIZOR,      50, {MOVE_BULLET_PUNCH, MOVE_U_TURN,       MOVE_KNOCK_OFF,    MOVE_SWORDS_DANCE}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
 
-    // --- Page 6 ---
-    [36] = { SPECIES_VULPIX,      50, {MOVE_EMBER,   MOVE_TAIL_WHIP, MOVE_NONE, MOVE_NONE} },
-    [37] = { SPECIES_GROWLITHE,   50, {MOVE_BITE,    MOVE_ROAR,      MOVE_NONE, MOVE_NONE} },
-    [38] = { SPECIES_PONYTA,      50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [39] = { SPECIES_MAREEP,      50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [40] = { SPECIES_SWINUB,      50, {MOVE_POWDER_SNOW, MOVE_TACKLE, MOVE_NONE, MOVE_NONE} },
-    [41] = { SPECIES_HOUNDOUR,    50, {MOVE_LEER,    MOVE_EMBER,     MOVE_NONE, MOVE_NONE} },
+    // --- Page 6: fan favorites ---
+    [36] = { SPECIES_WEAVILE,     50, {MOVE_ICE_SHARD,   MOVE_KNOCK_OFF,     MOVE_ICICLE_CRASH, MOVE_SWORDS_DANCE}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [37] = { SPECIES_EXCADRILL,   50, {MOVE_EARTHQUAKE,  MOVE_IRON_HEAD,     MOVE_ROCK_SLIDE,   MOVE_SWORDS_DANCE}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [38] = { SPECIES_HYDREIGON,   50, {MOVE_DARK_PULSE,  MOVE_DRACO_METEOR,  MOVE_FLAMETHROWER, MOVE_U_TURN}, IVS_PERFECT, EVS_SPECIAL_SWEEPER },
+    [39] = { SPECIES_GOODRA,      50, {MOVE_DRACO_METEOR, MOVE_FIRE_BLAST,   MOVE_SLUDGE_BOMB,  MOVE_THUNDERBOLT}, IVS_PERFECT, EVS_BULKY_SPECIAL },
+    [40] = { SPECIES_VOLCARONA,   50, {MOVE_QUIVER_DANCE, MOVE_FIRE_BLAST,   MOVE_BUG_BUZZ,     MOVE_GIGA_DRAIN}, IVS_PERFECT, EVS_SPECIAL_SWEEPER },
+    [41] = { SPECIES_TYPHLOSION_HISUI,   50, {MOVE_FLAMETHROWER, MOVE_SHADOW_BALL,  MOVE_SHADOW_SNEAK, MOVE_DARK_PULSE}, IVS_PERFECT, EVS_SPECIAL_SWEEPER },
 
-    // --- Page 7 ---
-    [42] = { SPECIES_BAGON,       50, {MOVE_RAGE,    MOVE_HEADBUTT,  MOVE_NONE, MOVE_NONE} },
-    [43] = { SPECIES_BELDUM,      50, {MOVE_TACKLE,  MOVE_NONE,      MOVE_NONE, MOVE_NONE} },
-    [44] = { SPECIES_TRAPINCH,    50, {MOVE_BITE,    MOVE_SAND_ATTACK, MOVE_NONE, MOVE_NONE} },
-    [45] = { SPECIES_SPHEAL,      50, {MOVE_TACKLE,  MOVE_GROWL,     MOVE_NONE, MOVE_NONE} },
-    [46] = { SPECIES_SHIELDON,    50, {MOVE_TACKLE,  MOVE_TAUNT,     MOVE_NONE, MOVE_NONE} },
-    [47] = { SPECIES_CRANIDOS,    50, {MOVE_HEADBUTT, MOVE_LEER,     MOVE_NONE, MOVE_NONE} },
+    // --- Page 7: fan favorites ---
+    [42] = { SPECIES_MIMIKYU,     50, {MOVE_PLAY_ROUGH,  MOVE_SHADOW_CLAW,   MOVE_SHADOW_SNEAK, MOVE_SWORDS_DANCE}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [43] = { SPECIES_TOXAPEX,     50, {MOVE_SCALD,       MOVE_TOXIC_SPIKES,  MOVE_RECOVER,      MOVE_HAZE}, IVS_PERFECT, EVS_BULKY_SPECIAL },
+    [44] = { SPECIES_CORVIKNIGHT, 50, {MOVE_BRAVE_BIRD,  MOVE_IRON_HEAD,     MOVE_ROOST,        MOVE_U_TURN}, IVS_PERFECT, EVS_BULKY_PHYSICAL },
+    [45] = { SPECIES_DRAGAPULT,   50, {MOVE_DRAGON_DARTS, MOVE_SHADOW_BALL,  MOVE_U_TURN,       MOVE_FLAMETHROWER}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [46] = { SPECIES_BAXCALIBUR,  50, {MOVE_ICICLE_CRASH, MOVE_DRAGON_DANCE, MOVE_EARTHQUAKE,   MOVE_ICE_SHARD}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
+    [47] = { SPECIES_KINGAMBIT,   50, {MOVE_KOWTOW_CLEAVE, MOVE_SUCKER_PUNCH, MOVE_IRON_HEAD,   MOVE_SWORDS_DANCE}, IVS_PERFECT, EVS_PHYSICAL_SWEEPER },
 };
 
 static void CreateStarterSelectableMons(u8 page);
+static void Starter_ApplyIVsAndEVs(struct Pokemon *mon, const struct StarterCandidate *cand);
 static void Starter_RedrawBallSlot(u8 slot, u16 globalIdx);
 static void Starter_Task_ScrollPage(u8 taskId);
 static void Starter_GiveChosenMons(void);
@@ -502,7 +515,7 @@ static const struct WindowTemplate sSelect_WindowTemplates[] =
         .tilemapLeft = 0,
         .tilemapTop = 15,
         .width = 20,
-        .height = 3,
+        .height = 5,          // was 3 — grown to fit starter mode's page-scroll hint on a 2nd line
         .paletteNum = PALNUM_TEXT,
         .baseBlock = 0x002f,
     },
@@ -513,7 +526,7 @@ static const struct WindowTemplate sSelect_WindowTemplates[] =
         .width = 8,
         .height = 8,          // was 6 — grown to fit starter mode's 4th row (Select/Stats/Next/Prev)
         .paletteNum = PALNUM_TEXT,
-        .baseBlock = 0x006b,
+        .baseBlock = 0x0093,  // was 0x006b, +0x28 tiles for the taller INFO window above
     },
     [SELECT_WIN_YES_NO] = {
         .bg = 0,
@@ -522,7 +535,7 @@ static const struct WindowTemplate sSelect_WindowTemplates[] =
         .width = 8,
         .height = 4,
         .paletteNum = PALNUM_TEXT,
-        .baseBlock = 0x00ab,  // was 0x009b, +0x10 tiles for the taller OPTIONS window above
+        .baseBlock = 0x00d3,  // was 0x00ab, +0x28 tiles for the taller INFO window above
     },
     [SELECT_WIN_MON_CATEGORY] = {
         .bg = 0,
@@ -531,7 +544,7 @@ static const struct WindowTemplate sSelect_WindowTemplates[] =
         .width = 15,
         .height = 2,
         .paletteNum = PALNUM_TEXT,
-        .baseBlock = 0x00cb,  // was 0x00bb, +0x10 tiles for the same reason
+        .baseBlock = 0x00f3,  // was 0x00cb, +0x28 tiles for the taller INFO window above
     },
     DUMMY_WIN_TEMPLATE,
 };
@@ -542,6 +555,7 @@ static const u8 sText_Select[]   = _("SELECT");
 static const u8 sText_Stats[]    = _("STATS");
 static const u8 sText_NextPage[] = _("NEXT");
 static const u8 sText_PrevPage[] = _("PREV");
+static const u8 sText_StarterPageHint[] = _("{DPAD_LEFTRIGHT}PAGE");
 static const u8 sSpeciesNameTextColors[] = {TEXT_COLOR_TRANSPARENT, TEXT_COLOR_RED, TEXT_COLOR_TRANSPARENT};
 
 static const struct OamData sOam_Select_Pokeball =
@@ -1973,6 +1987,23 @@ static void Starter_Task_ScrollPage(u8 taskId)
 // at the end of the scroll for any ball that never crossed the edge
 // threshold, and also reused by CreateStarterSelectableMons for the
 // initial page load (see below).
+// CreateMon's 4th argument is personality (shininess/gender/ability seed), not
+// an IV knob -- USE_RANDOM_IVS was being passed there by mistake, which just
+// gave every mon the same fixed personality value and left IVs untouched at
+// 0 (CreateMon never sets IVs itself). This applies the candidate's own
+// ivs[]/evs[] afterward and recalculates stats to match.
+static void Starter_ApplyIVsAndEVs(struct Pokemon *mon, const struct StarterCandidate *cand)
+{
+    u8 i;
+
+    for (i = 0; i < NUM_STATS; i++)
+    {
+        SetMonData(mon, MON_DATA_HP_IV + i, &cand->ivs[i]);
+        SetMonData(mon, MON_DATA_HP_EV + i, &cand->evs[i]);
+    }
+    CalculateMonStats(mon);
+}
+
 static void Starter_RedrawBallSlot(u8 slot, u16 globalIdx)
 {
     const struct StarterCandidate *cand = &sStarterSelectMons[globalIdx];
@@ -1980,12 +2011,13 @@ static void Starter_RedrawBallSlot(u8 slot, u16 globalIdx)
     u8 m, chosen;
 
     sFactorySelectScreen->mons[slot].monId = globalIdx; // repurposed: global pool index, not facility id
-    CreateMon(dest, cand->species, cand->level, USE_RANDOM_IVS, OTID_STRUCT_PLAYER_ID);
+    CreateMon(dest, cand->species, cand->level, Random32(), OTID_STRUCT_PLAYER_ID);
     for (m = 0; m < MAX_MON_MOVES; m++)
     {
         if (cand->moves[m] != MOVE_NONE)
             SetMonMoveSlot(dest, cand->moves[m], m);
     }
+    Starter_ApplyIVsAndEVs(dest, cand);
 
     chosen = sFactorySelectScreen->chosenState[globalIdx];
     sFactorySelectScreen->mons[slot].selectedId = chosen;
@@ -2026,12 +2058,13 @@ static void Starter_GiveChosenMons(void)
                 struct Pokemon *dest = &gParties[B_TRAINER_PLAYER][order - 1];
                 u8 m;
 
-                CreateMon(dest, cand->species, cand->level, USE_RANDOM_IVS, OTID_STRUCT_PLAYER_ID);
+                CreateMon(dest, cand->species, cand->level, Random32(), OTID_STRUCT_PLAYER_ID);
                 for (m = 0; m < MAX_MON_MOVES; m++)
                 {
                     if (cand->moves[m] != MOVE_NONE)
                         SetMonMoveSlot(dest, cand->moves[m], m);
                 }
+                Starter_ApplyIVsAndEVs(dest, cand);
 
                 GetSetPokedexFlag(SpeciesToNationalPokedexNum(cand->species), FLAG_SET_SEEN);
                 GetSetPokedexFlag(SpeciesToNationalPokedexNum(cand->species), FLAG_SET_CAUGHT);
@@ -2220,6 +2253,8 @@ static void Select_PrintSelectMonString(void)
         str = gText_TheseThreePkmnOkay;
 
     AddTextPrinterParameterized(SELECT_WIN_INFO, FONT_NORMAL, str, 2, 5, 0, NULL);
+    if (sFactorySelectScreen->starterMode)
+        AddTextPrinterParameterized(SELECT_WIN_INFO, FONT_NORMAL, sText_StarterPageHint, 2, 21, 0, NULL);
     CopyWindowToVram(SELECT_WIN_INFO, COPYWIN_GFX);
 }
 
@@ -2280,7 +2315,10 @@ static u8 Select_OptionRentDeselect(void)
 {
     u8 selectedId = sFactorySelectScreen->mons[sFactorySelectScreen->cursorPos].selectedId;
     u16 monId  = sFactorySelectScreen->mons[sFactorySelectScreen->cursorPos].monId;
-    if (selectedId == 0 && !Select_AreSpeciesValid(monId))
+    // In starter mode monId is repurposed as the global sStarterSelectMons index,
+    // not a gFacilityTrainerMons index, so the rental no-duplicate-species check
+    // doesn't apply -- and isn't wanted here anyway; any 3 starters are allowed.
+    if (selectedId == 0 && !sFactorySelectScreen->starterMode && !Select_AreSpeciesValid(monId))
     {
         Select_PrintCantSelectSameMon();
         Select_ErasePopupMenu(SELECT_WIN_OPTIONS);
@@ -2385,23 +2423,58 @@ static void Select_ReshowMonSprite(void)
 
 static void Select_CreateChosenMonsSprites(void)
 {
-    u8 i, j;
+    u8 i;
 
-    for (i = 0; i < FRONTIER_PARTY_SIZE; i++)
+    if (sFactorySelectScreen->starterMode)
     {
-        for (j = 0; j < SELECTABLE_MONS_COUNT; j++)
-        {
-            if (sFactorySelectScreen->mons[j].selectedId == i + 1)
-            {
-                struct Pokemon *mon = &sFactorySelectScreen->mons[j].monData;
-                enum Species species = GetMonData(mon, MON_DATA_SPECIES);
-                u32 personality = GetMonData(mon, MON_DATA_PERSONALITY);
-                bool8 isShiny = GetMonData(mon, MON_DATA_IS_SHINY);
+        // sFactorySelectScreen->mons[] only ever holds the currently displayed
+        // page -- Starter_RedrawBallSlot overwrites those slots every time the
+        // page scrolls, so a mon chosen on an earlier page no longer has valid
+        // monData there by the time we reach this screen. Rebuild each chosen
+        // mon fresh from chosenState[]/sStarterSelectMons instead.
+        u16 globalIdx;
 
-                sFactorySelectScreen->monPics[i].monSpriteId = CreateMonPicSprite(species, isShiny, personality, TRUE, (i * 72) + 16, 32, i + 13, TAG_NONE);
+        for (globalIdx = 0; globalIdx < STARTER_TOTAL_MONS; globalIdx++)
+        {
+            u8 order = sFactorySelectScreen->chosenState[globalIdx];
+            if (order != 0)
+            {
+                const struct StarterCandidate *cand = &sStarterSelectMons[globalIdx];
+                struct Pokemon mon;
+                u32 personality;
+                bool8 isShiny;
+
+                CreateMon(&mon, cand->species, cand->level, USE_RANDOM_IVS, OTID_STRUCT_PLAYER_ID);
+                personality = GetMonData(&mon, MON_DATA_PERSONALITY);
+                isShiny = GetMonData(&mon, MON_DATA_IS_SHINY);
+
+                i = order - 1;
+                sFactorySelectScreen->monPics[i].monSpriteId = CreateMonPicSprite(cand->species, isShiny, personality, TRUE, (i * 72) + 16, 32, i + 13, TAG_NONE);
                 gSprites[sFactorySelectScreen->monPics[i].monSpriteId].centerToCornerVecX = 0;
                 gSprites[sFactorySelectScreen->monPics[i].monSpriteId].centerToCornerVecY = 0;
-                break;
+            }
+        }
+    }
+    else
+    {
+        u8 j;
+
+        for (i = 0; i < FRONTIER_PARTY_SIZE; i++)
+        {
+            for (j = 0; j < SELECTABLE_MONS_COUNT; j++)
+            {
+                if (sFactorySelectScreen->mons[j].selectedId == i + 1)
+                {
+                    struct Pokemon *mon = &sFactorySelectScreen->mons[j].monData;
+                    enum Species species = GetMonData(mon, MON_DATA_SPECIES);
+                    u32 personality = GetMonData(mon, MON_DATA_PERSONALITY);
+                    bool8 isShiny = GetMonData(mon, MON_DATA_IS_SHINY);
+
+                    sFactorySelectScreen->monPics[i].monSpriteId = CreateMonPicSprite(species, isShiny, personality, TRUE, (i * 72) + 16, 32, i + 13, TAG_NONE);
+                    gSprites[sFactorySelectScreen->monPics[i].monSpriteId].centerToCornerVecX = 0;
+                    gSprites[sFactorySelectScreen->monPics[i].monSpriteId].centerToCornerVecY = 0;
+                    break;
+                }
             }
         }
     }

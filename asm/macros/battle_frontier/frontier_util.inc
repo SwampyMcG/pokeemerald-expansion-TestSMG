@@ -78,6 +78,12 @@
 	special CallFrontierUtilFunc
 	.endm
 
+	@ TRUE if the opponent is one of the Kanto Gym Leaders, FALSE otherwise
+	.macro frontier_isleader
+	setvar VAR_0x8004, FRONTIER_UTIL_FUNC_IS_LEADER
+	special CallFrontierUtilFunc
+	.endm
+
 	@ Awards battle points depending on the current challenge
 	.macro frontier_givepoints
 	setvar VAR_0x8004, FRONTIER_UTIL_FUNC_GIVE_BATTLE_POINTS

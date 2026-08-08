@@ -38,6 +38,8 @@
 #include "constants/frontier_util.h"
 #include "constants/trainers.h"
 #include "constants/game_stat.h"
+#include "constants/frontier_speech.h"
+#include "data/battle_frontier/battle_frontier_speech.h"
 #include "constants/moves.h"
 #include "constants/items.h"
 #include "constants/event_objects.h"
@@ -77,6 +79,7 @@ static void ShowFacilityResultsWindow(void);
 static void CheckPutFrontierTVShowOnAir(void);
 static void Script_GetFrontierBrainStatus(void);
 static void IsTrainerFrontierBrain(void);
+static void IsTrainerFrontierLeader(void);
 static void GiveBattlePoints(void);
 static void GetFacilitySymbolCount(void);
 static void GiveFacilitySymbol(void);
@@ -723,6 +726,7 @@ static void (*const sFrontierUtilFuncs[])(void) =
     [FRONTIER_UTIL_FUNC_BUFFER_TRAINER_NAME]   = BufferFrontierTrainerName,
     [FRONTIER_UTIL_FUNC_RESET_SKETCH_MOVES]    = ResetSketchedMoves,
     [FRONTIER_UTIL_FUNC_SET_BRAIN_OBJECT]      = SetFacilityBrainObjectEvent,
+    [FRONTIER_UTIL_FUNC_IS_LEADER]             = IsTrainerFrontierLeader,
 };
 
 static const struct WindowTemplate sFrontierResultsWindowTemplate =
@@ -803,7 +807,7 @@ static const u16 sFrontierTrainerIdRanges[][2] =
     {FRONTIER_TRAINER_BRADEN,  FRONTIER_TRAINER_ALISON}, // 140 - 179
     {FRONTIER_TRAINER_ZACHERY, FRONTIER_TRAINER_LAMAR},  // 160 - 199
     {FRONTIER_TRAINER_HANK,    FRONTIER_TRAINER_TESS},   // 180 - 219
-    {FRONTIER_TRAINER_JAXON,   FRONTIER_TRAINER_GRETEL}, // 200 - 299
+    {FRONTIER_TRAINER_JAXON,   FRONTIER_TRAINER_VOLKNER}, // 200 - 324
 };
 
 static const u16 sFrontierTrainerIdRangesHard[][2] =
@@ -815,7 +819,7 @@ static const u16 sFrontierTrainerIdRangesHard[][2] =
     {FRONTIER_TRAINER_HANK,    FRONTIER_TRAINER_LAMAR},  // 180 - 199
     {FRONTIER_TRAINER_JAXON,   FRONTIER_TRAINER_TESS},   // 200 - 219
     {FRONTIER_TRAINER_LEON,    FRONTIER_TRAINER_RAUL},   // 220 - 239
-    {FRONTIER_TRAINER_JAXON,   FRONTIER_TRAINER_GRETEL}, // 200 - 299
+    {FRONTIER_TRAINER_JAXON,   FRONTIER_TRAINER_VOLKNER}, // 200 - 324
 };
 
 #define BANNED_SPECIES_SHOWN 6
@@ -1792,7 +1796,7 @@ void CopyFrontierTrainerText(u8 whichText, u16 trainerId)
     #endif //FREE_BATTLE_TOWER_E_READER
             CopyFrontierBrainText(FALSE);
         else if (trainerId < FRONTIER_TRAINERS_COUNT)
-            FrontierSpeechToString(gFacilityTrainers[trainerId].speechBefore);
+            CopyFrontierTrainerSpeech(gStringVar4, gFacilityTrainers[trainerId].facilityClass, FRONTIER_SPEECH_BEFORE);
         else if (trainerId < TRAINER_RECORD_MIXING_APPRENTICE)
             FrontierSpeechToString(gSaveBlock2Ptr->frontier.towerRecords[trainerId - TRAINER_RECORD_MIXING_FRIEND].greeting);
         else
@@ -1813,7 +1817,7 @@ void CopyFrontierTrainerText(u8 whichText, u16 trainerId)
         }
         else if (trainerId < FRONTIER_TRAINERS_COUNT)
         {
-            FrontierSpeechToString(gFacilityTrainers[trainerId].speechWin);
+            CopyFrontierTrainerSpeech(gStringVar4, gFacilityTrainers[trainerId].facilityClass, FRONTIER_SPEECH_TRAINER_WIN);
         }
         else if (trainerId < TRAINER_RECORD_MIXING_APPRENTICE)
         {
@@ -1843,7 +1847,7 @@ void CopyFrontierTrainerText(u8 whichText, u16 trainerId)
         }
         else if (trainerId < FRONTIER_TRAINERS_COUNT)
         {
-            FrontierSpeechToString(gFacilityTrainers[trainerId].speechLose);
+            CopyFrontierTrainerSpeech(gStringVar4, gFacilityTrainers[trainerId].facilityClass, FRONTIER_SPEECH_TRAINER_LOSE);
         }
         else if (trainerId < TRAINER_RECORD_MIXING_APPRENTICE)
         {
@@ -1940,6 +1944,14 @@ static void IsTrainerFrontierBrain(void)
         gSpecialVar_Result = FALSE;
 }
 
+static void IsTrainerFrontierLeader(void)
+{
+    if (TRAINER_BATTLE_PARAM.opponentA >= FRONTIER_TRAINER_BROCK && TRAINER_BATTLE_PARAM.opponentA <= FRONTIER_TRAINER_VOLKNER)
+        gSpecialVar_Result = TRUE;
+    else
+        gSpecialVar_Result = FALSE;
+}
+
 u8 GetPlayerSymbolCountForFacility(u8 facility)
 {
     return FlagGet(FLAG_SYS_TOWER_SILVER + facility * 2)
@@ -1953,6 +1965,7 @@ static void GiveBattlePoints(void)
     s32 facility = VarGet(VAR_FRONTIER_FACILITY);
     s32 battleMode = VarGet(VAR_FRONTIER_BATTLE_MODE);
     s32 points;
+    s32 roundPoints;
 
     switch (facility)
     {
@@ -1984,7 +1997,13 @@ static void GiveBattlePoints(void)
     if (challengeNum >= ARRAY_COUNT(sBattlePointAwards[0][0]))
         challengeNum = ARRAY_COUNT(sBattlePointAwards[0][0]) - 1;
 
-    points = sBattlePointAwards[facility][battleMode][challengeNum];
+    // Open Level challenges face max-level teams throughout, so they pay out double BP
+    // per round compared to Lvl 50.
+    roundPoints = sBattlePointAwards[facility][battleMode][challengeNum];
+    if (lvlMode == FRONTIER_LVL_OPEN)
+        roundPoints *= 2;
+
+    points = roundPoints;
     if (TRAINER_BATTLE_PARAM.opponentA == TRAINER_FRONTIER_BRAIN)
         points += 10;
     gSaveBlock2Ptr->frontier.battlePoints += points;
@@ -1993,8 +2012,8 @@ static void GiveBattlePoints(void)
         gSaveBlock2Ptr->frontier.battlePoints = MAX_BATTLE_FRONTIER_POINTS;
 
     points = gSaveBlock2Ptr->frontier.cardBattlePoints;
-    points += sBattlePointAwards[facility][battleMode][challengeNum];
-    IncrementDailyBattlePoints(sBattlePointAwards[facility][battleMode][challengeNum]);
+    points += roundPoints;
+    IncrementDailyBattlePoints(roundPoints);
     if (TRAINER_BATTLE_PARAM.opponentA == TRAINER_FRONTIER_BRAIN)
     {
         points += 10;
@@ -2091,7 +2110,12 @@ static void CheckPartyIneligibility(void)
     switch (battleMode)
     {
     case FRONTIER_MODE_SINGLES:
-        toChoose = FRONTIER_PARTY_SIZE;
+        // Battle Palace proper (not the Verdanturf Tent, which shares its facility ID
+        // but keeps the normal party size) is a single-Pokemon gauntlet - no bench.
+        if (VarGet(VAR_FRONTIER_FACILITY) == FRONTIER_FACILITY_PALACE && gSaveBlock2Ptr->frontier.lvlMode != FRONTIER_LVL_TENT)
+            toChoose = 1;
+        else
+            toChoose = FRONTIER_PARTY_SIZE;
         break;
     case FRONTIER_MODE_MULTIS:
     case FRONTIER_MODE_LINK_MULTIS:
@@ -2100,6 +2124,8 @@ static void CheckPartyIneligibility(void)
     case FRONTIER_MODE_DOUBLES:
         if (VarGet(VAR_FRONTIER_FACILITY) == FRONTIER_FACILITY_TOWER)
             toChoose = FRONTIER_DOUBLES_PARTY_SIZE;
+        else if (VarGet(VAR_FRONTIER_FACILITY) == FRONTIER_FACILITY_PALACE && gSaveBlock2Ptr->frontier.lvlMode != FRONTIER_LVL_TENT)
+            toChoose = 2;
         else
             toChoose = FRONTIER_PARTY_SIZE;
         break;
@@ -2842,6 +2868,15 @@ u16 GetRandomScaledFrontierTrainerId(u8 challengeNum, u8 battleNum)
     return trainerId;
 }
 
+// Picks one of the Frontier Leaders (Kanto/Hoenn Gym Leaders, the Kanto Elite Four, and the
+// Sinnoh Gym Leaders, FRONTIER_TRAINER_BROCK through FRONTIER_TRAINER_VOLKNER), which are
+// laid out as a contiguous block of trainer IDs. Used for the round-ending (7th) battle when
+// the Frontier Brain isn't the one appearing that round.
+u16 GetRandomFrontierLeaderTrainerId(void)
+{
+    return FRONTIER_TRAINER_BROCK + (Random() % (FRONTIER_TRAINER_VOLKNER - FRONTIER_TRAINER_BROCK + 1));
+}
+
 static void UNUSED GetRandomScaledFrontierTrainerIdRange(u8 challengeNum, u8 battleNum, u16 *trainerIdPtr, u8 *rangePtr)
 {
     u16 trainerId, range;
@@ -2870,6 +2905,36 @@ static void UNUSED GetRandomScaledFrontierTrainerIdRange(u8 challengeNum, u8 bat
     *trainerIdPtr = trainerId;
     *rangePtr = range;
 }
+
+// Named one-off Frontier facility classes (the Frontier Leaders - Kanto and Hoenn Gym
+// Leaders) and their overworld sprites. Kept separate from
+// gTowerMaleFacilityClasses/gTowerFemaleFacilityClasses, which double as the pool for
+// e-reader/apprentice random trainer generation - these classes should never be
+// randomly generated as someone else's identity.
+static const struct FacilityClass sLeaderFacilityClasses[] =
+{
+    {FACILITY_CLASS_LEADER_BROCK, OBJ_EVENT_GFX_BROCK},
+    {FACILITY_CLASS_LEADER_MISTY, OBJ_EVENT_GFX_MISTY},
+    {FACILITY_CLASS_LEADER_LT_SURGE, OBJ_EVENT_GFX_LT_SURGE},
+    {FACILITY_CLASS_LEADER_ERIKA, OBJ_EVENT_GFX_ERIKA},
+    {FACILITY_CLASS_LEADER_KOGA, OBJ_EVENT_GFX_KOGA},
+    {FACILITY_CLASS_LEADER_SABRINA, OBJ_EVENT_GFX_SABRINA},
+    {FACILITY_CLASS_LEADER_ROXANNE, OBJ_EVENT_GFX_ROXANNE},
+    {FACILITY_CLASS_LEADER_BRAWLY, OBJ_EVENT_GFX_BRAWLY},
+    {FACILITY_CLASS_LEADER_WATTSON, OBJ_EVENT_GFX_WATTSON},
+    {FACILITY_CLASS_LEADER_FLANNERY, OBJ_EVENT_GFX_FLANNERY},
+    {FACILITY_CLASS_LEADER_NORMAN, OBJ_EVENT_GFX_NORMAN},
+    {FACILITY_CLASS_LEADER_WINONA, OBJ_EVENT_GFX_WINONA},
+    {FACILITY_CLASS_LEADER_JUAN, OBJ_EVENT_GFX_JUAN},
+    {FACILITY_CLASS_LEADER_LORELEI, OBJ_EVENT_GFX_LORELEI},
+    {FACILITY_CLASS_LEADER_BRUNO, OBJ_EVENT_GFX_BRUNO},
+    {FACILITY_CLASS_LEADER_AGATHA, OBJ_EVENT_GFX_AGATHA},
+    {FACILITY_CLASS_LEADER_LANCE, OBJ_EVENT_GFX_LANCE},
+    // Roark, Gardenia, Maylene, Crasher Wake, Fantina, Byron, Candice, and Volkner
+    // (FACILITY_CLASS_LEADER_ROARK..VOLKNER) are deliberately absent here - their overworld
+    // art hasn't been palette-matched to one of the game's shared NPC palettes yet, so they
+    // fall through to the OBJ_EVENT_GFX_BOY_1 default below until that's done.
+};
 
 void SetBattleFacilityTrainerGfxId(u16 trainerId, u8 tempVarId)
 {
@@ -2952,17 +3017,26 @@ void SetBattleFacilityTrainerGfxId(u16 trainerId, u8 tempVarId)
         }
     }
 
+    // Not in either table (both are also used for e-reader/apprentice random
+    // generation, so named one-off classes like the Frontier Leaders are
+    // deliberately left out of them - see sLeaderFacilityClasses).
+    for (i = 0; i < ARRAY_COUNT(sLeaderFacilityClasses); i++)
+    {
+        if (sLeaderFacilityClasses[i].class == facilityClass)
+            break;
+    }
+    trainerObjectGfxId = (i != ARRAY_COUNT(sLeaderFacilityClasses)) ? sLeaderFacilityClasses[i].gfxId : OBJ_EVENT_GFX_BOY_1;
     switch (tempVarId)
     {
     case 0:
     default:
-        VarSet(VAR_OBJ_GFX_ID_0, OBJ_EVENT_GFX_BOY_1);
+        VarSet(VAR_OBJ_GFX_ID_0, trainerObjectGfxId);
         return;
     case 1:
-        VarSet(VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_BOY_1);
+        VarSet(VAR_OBJ_GFX_ID_1, trainerObjectGfxId);
         return;
     case 15:
-        VarSet(VAR_OBJ_GFX_ID_E, OBJ_EVENT_GFX_BOY_1);
+        VarSet(VAR_OBJ_GFX_ID_E, trainerObjectGfxId);
         return;
     }
 }
@@ -3018,10 +3092,13 @@ u16 GetBattleFacilityTrainerGfxId(u16 trainerId)
         trainerObjectGfxId = gTowerFemaleFacilityClasses[i].gfxId;
         return trainerObjectGfxId;
     }
-    else
+
+    for (i = 0; i < ARRAY_COUNT(sLeaderFacilityClasses); i++)
     {
-        return OBJ_EVENT_GFX_BOY_1;
+        if (sLeaderFacilityClasses[i].class == facilityClass)
+            return sLeaderFacilityClasses[i].gfxId;
     }
+    return OBJ_EVENT_GFX_BOY_1;
 }
 
 u8 GetFrontierTrainerFrontSpriteId(u16 trainerId)
@@ -3234,6 +3311,150 @@ u16 GetRandomFrontierMonFromSet(u16 trainerId)
     } while ((level == FRONTIER_MAX_LEVEL_50 || level == 20) && monId > FRONTIER_MONS_HIGH_TIER);
 
     return monId;
+}
+
+// Picks one line from the trainer's tone-archetype speech pool (see
+// data/battle_frontier/battle_frontier_speech.h). Recorded battles (record
+// mixing / battle records played back later) always get the pool's first
+// line instead of a fresh random pick, since the actual line spoken during
+// the original battle isn't saved - this keeps played-back battles from
+// showing different text each time they're viewed, at the cost of variety.
+static const u8 *GetFrontierTrainerSpeech(u8 facilityClass, enum FrontierSpeechCategory category)
+{
+    const struct FrontierSpeechPool *pool;
+    const u8 *const *lines;
+    u8 count;
+    u8 archetype = FRONTIER_SPEECH_DEFAULT;
+
+    if (facilityClass < FACILITY_CLASSES_COUNT)
+        archetype = sFacilityClassToSpeechArchetype[facilityClass];
+
+    pool = &sFrontierSpeechPools[archetype];
+    switch (category)
+    {
+    case FRONTIER_SPEECH_TRAINER_WIN:
+        lines = pool->win;
+        count = pool->winCount;
+        break;
+    case FRONTIER_SPEECH_TRAINER_LOSE:
+        lines = pool->lose;
+        count = pool->loseCount;
+        break;
+    case FRONTIER_SPEECH_BEFORE:
+    default:
+        lines = pool->before;
+        count = pool->beforeCount;
+        break;
+    }
+
+    if (count == 0)
+        return sSpeech_Fallback;
+
+    // Always draw from the RNG here, even during a recorded-battle replay where the
+    // result is discarded in favor of lines[0]. The original battle (while being
+    // recorded) consumed this same Random() call, so skipping it during playback would
+    // desync the shared RNG stream from that point on - corrupting everything replayed
+    // afterward (e.g. the next damage roll), not just the speech line shown.
+    u32 index = Random() % count;
+
+    if (gBattleTypeFlags & BATTLE_TYPE_RECORDED)
+        return lines[0];
+
+    return lines[index];
+}
+
+// Same line-width budget FrontierSpeechToString() has always used for this
+// buffer's dialogue box (see below); reused here so wrapping matches whatever
+// box speech ends up being displayed in.
+#define FRONTIER_SPEECH_LINE_WIDTH_PX 204
+// Longest single word/line this function will build before giving up on
+// finding a break point and forcing one. Generous relative to the ~5-40
+// character phrases currently authored, so normal text never hits it.
+#define FRONTIER_SPEECH_WRAP_BUFFER_SIZE 100
+
+// Greedy word-wrap for arbitrary Frontier speech text: fits as many words as
+// will pixel-fit (FRONTIER_SPEECH_LINE_WIDTH_PX) onto each line, and once two
+// lines are full, turns the next break into CHAR_PROMPT_SCROLL instead of
+// CHAR_NEWLINE so the dialogue box pauses for a button press and scrolls
+// before continuing (repeats every 2 lines, for the rare phrase long enough
+// to need a 3rd+ page). This means new phrases can just be written as plain
+// sentences of any reasonable length - no one needs to hand-measure pixel
+// widths or place \n themselves when adding to the pools later.
+static void CopyAndWrapFrontierSpeechText(u8 *dest, const u8 *src)
+{
+    u8 line[FRONTIER_SPEECH_WRAP_BUFFER_SIZE];
+    u8 candidate[FRONTIER_SPEECH_WRAP_BUFFER_SIZE];
+    u32 lineLen = 0;
+    u32 destLen = 0;
+    u32 linesOnPage = 0;
+    u32 srcPos = 0;
+
+    while (src[srcPos] != EOS)
+    {
+        u8 word[FRONTIER_SPEECH_WRAP_BUFFER_SIZE];
+        u32 wordLen = 0;
+        u32 candidateLen;
+        bool32 fits;
+
+        while (src[srcPos] != CHAR_SPACE && src[srcPos] != EOS && wordLen < FRONTIER_SPEECH_WRAP_BUFFER_SIZE - 1)
+            word[wordLen++] = src[srcPos++];
+        word[wordLen] = EOS;
+        if (src[srcPos] == CHAR_SPACE)
+            srcPos++;
+
+        // Bounds-check the prospective "current line + word" length before touching
+        // the candidate buffer at all, so a pathologically long line/word can never
+        // overflow it (falls through to the "doesn't fit" path below instead).
+        candidateLen = (lineLen == 0) ? wordLen : lineLen + 1 + wordLen;
+        fits = FALSE;
+        if (candidateLen < FRONTIER_SPEECH_WRAP_BUFFER_SIZE)
+        {
+            if (lineLen == 0)
+            {
+                memcpy(candidate, word, wordLen);
+            }
+            else
+            {
+                memcpy(candidate, line, lineLen);
+                candidate[lineLen] = CHAR_SPACE;
+                memcpy(&candidate[lineLen + 1], word, wordLen);
+            }
+            candidate[candidateLen] = EOS;
+            fits = (lineLen == 0 || GetStringWidth(FONT_NORMAL, candidate, 0) <= FRONTIER_SPEECH_LINE_WIDTH_PX);
+        }
+
+        if (fits)
+        {
+            lineLen = candidateLen;
+            memcpy(line, candidate, candidateLen);
+        }
+        else if (wordLen < FRONTIER_SPEECH_WRAP_BUFFER_SIZE)
+        {
+            // Word doesn't fit on the current line (or the combined length would've
+            // overflowed the buffer) - flush what's built so far and start fresh with it.
+            memcpy(&dest[destLen], line, lineLen);
+            destLen += lineLen;
+            dest[destLen++] = (linesOnPage == 1) ? CHAR_PROMPT_SCROLL : CHAR_NEWLINE;
+            linesOnPage ^= 1;
+
+            lineLen = wordLen;
+            memcpy(line, word, wordLen);
+        }
+        // else: even the bare word doesn't fit the buffer - drop it rather than overflow.
+    }
+
+    memcpy(&dest[destLen], line, lineLen);
+    destLen += lineLen;
+    dest[destLen] = EOS;
+}
+
+#undef FRONTIER_SPEECH_WRAP_BUFFER_SIZE
+
+// Picks a random line (see GetFrontierTrainerSpeech) and copies it into dest,
+// inserting line breaks/scroll prompts to fit the dialogue box.
+void CopyFrontierTrainerSpeech(u8 *dest, u8 facilityClass, enum FrontierSpeechCategory category)
+{
+    CopyAndWrapFrontierSpeechText(dest, GetFrontierTrainerSpeech(facilityClass, category));
 }
 
 void FrontierSpeechToString(const u16 *words)

@@ -134,7 +134,7 @@ static void SetVerdanturfTentTrainerGfx(void)
 static void BufferVerdanturfTentTrainerIntro(void)
 {
     if (TRAINER_BATTLE_PARAM.opponentA < FRONTIER_TRAINERS_COUNT)
-        FrontierSpeechToString(gFacilityTrainers[TRAINER_BATTLE_PARAM.opponentA].speechBefore);
+        CopyFrontierTrainerSpeech(gStringVar4, gFacilityTrainers[TRAINER_BATTLE_PARAM.opponentA].facilityClass, FRONTIER_SPEECH_BEFORE);
 }
 
 static void SaveVerdanturfTentChallenge(void)

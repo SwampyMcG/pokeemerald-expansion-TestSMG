@@ -118,7 +118,15 @@ static void DoFacilityTrainerBattleInternal(u8 facility)
         if (VarGet(VAR_FRONTIER_BATTLE_MODE) == FRONTIER_MODE_DOUBLES)
         gBattleTypeFlags |= BATTLE_TYPE_DOUBLE;
         if (gSaveBlock2Ptr->frontier.lvlMode != FRONTIER_LVL_TENT)
-        FillFrontierTrainerParty(FRONTIER_PARTY_SIZE);
+        {
+            // Real Battle Palace is a 1v1/2v2 gauntlet now (see the Palace lobby's party
+            // selection), so the opponent's party needs to match instead of always
+            // fielding a full FRONTIER_PARTY_SIZE team.
+            if (VarGet(VAR_FRONTIER_BATTLE_MODE) == FRONTIER_MODE_DOUBLES)
+                FillFrontierTrainerParty(2);
+            else
+                FillFrontierTrainerParty(1);
+        }
         else
         FillTentTrainerParty(FRONTIER_PARTY_SIZE);
         CreateTask(Task_StartBattleAfterTransition, 1);

@@ -153,14 +153,21 @@ static void GetPalaceCommentId(void)
 
 static void SetPalaceOpponent(void)
 {
-    TRAINER_BATTLE_PARAM.opponentA = 5 *(Random() % 255) / 64u;
+    // The round-ending (7th) battle goes to a Frontier Leader instead of a random
+    // trainer, unless the Palace Maven (Frontier Brain) is appearing this round - the
+    // script already branches away from this path in that case. See the equivalent
+    // check in battle_tower.c/battle_factory.c.
+    if (gSaveBlock2Ptr->frontier.curChallengeBattleNum == FRONTIER_STAGES_PER_CHALLENGE - 1)
+        TRAINER_BATTLE_PARAM.opponentA = GetRandomFrontierLeaderTrainerId();
+    else
+        TRAINER_BATTLE_PARAM.opponentA = 5 *(Random() % 255) / 64u;
     SetBattleFacilityTrainerGfxId(TRAINER_BATTLE_PARAM.opponentA, 0);
 }
 
 static void BufferOpponentIntroSpeech(void)
 {
     if (TRAINER_BATTLE_PARAM.opponentA < FRONTIER_TRAINERS_COUNT)
-        FrontierSpeechToString(gFacilityTrainers[TRAINER_BATTLE_PARAM.opponentA].speechBefore);
+        CopyFrontierTrainerSpeech(gStringVar4, gFacilityTrainers[TRAINER_BATTLE_PARAM.opponentA].facilityClass, FRONTIER_SPEECH_BEFORE);
 }
 
 static void IncrementPalaceStreak(void)

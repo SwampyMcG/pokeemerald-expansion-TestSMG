@@ -47,6 +47,8 @@ BattleFrontier_BattlePikeLobby_EventScript_WonChallenge::
 BattleFrontier_BattlePikeLobby_EventScript_DefeatedQueen::
 	msgbox BattleFrontier_BattlePikeLobby_Text_SnatchedVictoryFromQueen, MSGBOX_DEFAULT
 	waitmessage
+	msgbox BattleFrontier_BattlePikeLobby_Text_AwardGoldBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_GOLD_BOTTLE_CAP
 BattleFrontier_BattlePikeLobby_EventScript_GiveBattlePoints::
 	msgbox BattleFrontier_BattlePikeLobby_Text_AwardYouTheseBattlePoints, MSGBOX_DEFAULT
 	frontier_givepoints
@@ -383,6 +385,10 @@ BattleFrontier_BattlePikeLobby_Text_SnatchedVictoryFromQueen:
 	.string "Congratulations…\p"
 	.string "You have snatched victory from the\n"
 	.string "PIKE QUEEN and cleared the event…$"
+
+BattleFrontier_BattlePikeLobby_Text_AwardGoldBottleCap:
+	.string "And for defeating a FRONTIER BRAIN,\n"
+	.string "please take this.$"
 
 BattleFrontier_BattlePikeLobby_Text_AwardYouTheseBattlePoints:
 	.string "In recognition of your amazing luck,\n"

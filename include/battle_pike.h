@@ -5,5 +5,6 @@ void CallBattlePikeFunction(void);
 u8 GetBattlePikeWildMonHeaderId(void);
 bool32 TryGenerateBattlePikeWildMon(bool8 checkKeenEyeIntimidate);
 bool8 InBattlePike(void);
+void Pike_TryInflictPendingConfusion(void);
 
 #endif // GUARD_BATTLE_PIKE_H

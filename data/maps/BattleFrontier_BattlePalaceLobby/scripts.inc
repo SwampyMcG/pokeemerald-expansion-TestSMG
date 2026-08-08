@@ -39,11 +39,21 @@ BattleFrontier_BattlePalaceLobby_EventScript_WonChallenge::
 	lockall
 	frontier_isbrain
 	goto_if_eq VAR_RESULT, TRUE, BattleFrontier_BattlePalaceLobby_EventScript_DefeatedMaven
+	frontier_isleader
+	goto_if_eq VAR_RESULT, TRUE, BattleFrontier_BattlePalaceLobby_EventScript_DefeatedLeader
 	msgbox BattleFrontier_BattlePalaceLobby_Text_FirmTrueBondsFor7WinStreak, MSGBOX_DEFAULT
+	goto BattleFrontier_BattlePalaceLobby_EventScript_GiveBattlePoints
+
+BattleFrontier_BattlePalaceLobby_EventScript_DefeatedLeader::
+	msgbox BattleFrontier_BattlePalaceLobby_Text_DefeatedLeader, MSGBOX_DEFAULT
+	msgbox BattleFrontier_BattlePalaceLobby_Text_AwardSilverBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_BOTTLE_CAP
 	goto BattleFrontier_BattlePalaceLobby_EventScript_GiveBattlePoints
 
 BattleFrontier_BattlePalaceLobby_EventScript_DefeatedMaven::
 	msgbox BattleFrontier_BattlePalaceLobby_Text_ToDefeatMavenAnd7Trainers, MSGBOX_DEFAULT
+	msgbox BattleFrontier_BattlePalaceLobby_Text_AwardGoldBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_GOLD_BOTTLE_CAP
 BattleFrontier_BattlePalaceLobby_EventScript_GiveBattlePoints::
 	msgbox BattleFrontier_BattlePalaceLobby_Text_PresentYouWithBattlePoints, MSGBOX_DEFAULT
 	frontier_givepoints
@@ -147,12 +157,20 @@ BattleFrontier_BattlePalaceLobby_EventScript_TryEnterChallenge::
 	frontier_checkineligible
 	goto_if_eq VAR_0x8004, TRUE, BattleFrontier_BattlePalaceLobby_EventScript_NotEnoughValidMons
 	frontier_set FRONTIER_DATA_LVL_MODE, VAR_RESULT
-	msgbox BattleFrontier_BattlePalaceLobby_Text_NowSelectThreeMons, MSGBOX_DEFAULT
+	goto_if_eq VAR_FRONTIER_BATTLE_MODE, FRONTIER_MODE_DOUBLES, BattleFrontier_BattlePalaceLobby_EventScript_SelectTwoMons
+	msgbox BattleFrontier_BattlePalaceLobby_Text_NowSelectOneMon, MSGBOX_DEFAULT
+	setvar VAR_0x8005, 1
+	goto BattleFrontier_BattlePalaceLobby_EventScript_DoChoosePartyForChallenge
+
+BattleFrontier_BattlePalaceLobby_EventScript_SelectTwoMons::
+	msgbox BattleFrontier_BattlePalaceLobby_Text_NowSelectTwoMons, MSGBOX_DEFAULT
+	setvar VAR_0x8005, 2
+
+BattleFrontier_BattlePalaceLobby_EventScript_DoChoosePartyForChallenge::
 	fadescreen FADE_TO_BLACK
 	callnative RemoveFollowingPokemon
 	call BattleFrontier_EventScript_GetLvlMode
 	copyvar VAR_0x8004, VAR_RESULT
-	setvar VAR_0x8005, FRONTIER_PARTY_SIZE
 	special ChoosePartyForBattleFrontier
 	goto_if_eq VAR_RESULT, 0, BattleFrontier_BattlePalaceLobby_EventScript_LoadPartyAndCancelChallenge
 	msgbox BattleFrontier_BattlePalaceLobby_Text_MustSaveBeforeChallenge2, MSGBOX_YESNO
@@ -422,10 +440,10 @@ BattleFrontier_BattlePalaceLobby_Text_WhichChallenge:
 
 BattleFrontier_BattlePalaceLobby_Text_NotEnoughValidMonsLv50:
 	.string "Sigh…\p"
-	.string "You do not have the three POKéMON\n"
-	.string "required for the challenge.\p"
-	.string "To enter, you must provide three\n"
-	.string "different kinds of POKéMON.\p"
+	.string "You do not have enough eligible\n"
+	.string "POKéMON for the challenge.\p"
+	.string "To enter, you must provide POKéMON\n"
+	.string "of different kinds.\p"
 	.string "These POKéMON must all be of\n"
 	.string "Level 50 or lower.\p"
 	.string "They also must not be holding\n"
@@ -438,17 +456,21 @@ BattleFrontier_BattlePalaceLobby_Text_NotEnoughValidMonsEnd:
 
 BattleFrontier_BattlePalaceLobby_Text_NotEnoughValidMonsLvOpen:
 	.string "Sigh…\p"
-	.string "You do not have the three POKéMON\n"
-	.string "required for the challenge.\p"
-	.string "To enter, you must provide three\n"
-	.string "different kinds of POKéMON.\p"
+	.string "You do not have enough eligible\n"
+	.string "POKéMON for the challenge.\p"
+	.string "To enter, you must provide POKéMON\n"
+	.string "of different kinds.\p"
 	.string "They also must not be holding\n"
 	.string "the same kinds of items.\p"
 	.string "EGGS{STR_VAR_1}.$"
 
-BattleFrontier_BattlePalaceLobby_Text_NowSelectThreeMons:
-	.string "Good. Now, you must select your\n"
-	.string "three POKéMON.$"
+BattleFrontier_BattlePalaceLobby_Text_NowSelectOneMon:
+	.string "Good. Now, you must select the one\n"
+	.string "POKéMON who will fight for you.$"
+
+BattleFrontier_BattlePalaceLobby_Text_NowSelectTwoMons:
+	.string "Good. Now, you must select the two\n"
+	.string "POKéMON who will fight for you.$"
 
 BattleFrontier_BattlePalaceLobby_Text_MustSaveBeforeChallenge2:
 	.string "I must save before I show you to\n"
@@ -584,6 +606,19 @@ BattleFrontier_BattlePalaceLobby_Text_ExplainDoubleBattleChallenge:
 BattleFrontier_BattlePalaceLobby_Text_ToDefeatMavenAnd7Trainers:
 	.string "To defeat the PALACE MAVEN\n"
 	.string "and seven TRAINERS in a row…$"
+
+BattleFrontier_BattlePalaceLobby_Text_DefeatedLeader:
+	.string "Incredible! You've defeated a visiting\n"
+	.string "GYM LEADER!\p"
+	.string "$"
+
+BattleFrontier_BattlePalaceLobby_Text_AwardSilverBottleCap:
+	.string "As a token of that victory, please\n"
+	.string "take this.$"
+
+BattleFrontier_BattlePalaceLobby_Text_AwardGoldBottleCap:
+	.string "And for defeating a FRONTIER BRAIN,\n"
+	.string "please take this.$"
 
 BattleFrontier_BattlePalaceLobby_Text_PresentYouWithBattlePoints:
 	.string "In honor of the bond you share with\n"

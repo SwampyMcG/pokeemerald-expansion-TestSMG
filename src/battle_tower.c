@@ -885,7 +885,13 @@ static void SetNextTowerOpponent(void)
             s32 i;
             while (1)
             {
-                id = GetRandomScaledFrontierTrainerId(challengeNum, gSaveBlock2Ptr->frontier.curChallengeBattleNum);
+                // The round-ending battle goes to a Frontier Leader instead of a random
+                // "hard tier" trainer, unless the Frontier Brain is appearing this round
+                // (the script already branches away from this path in that case).
+                if (gSaveBlock2Ptr->frontier.curChallengeBattleNum == FRONTIER_STAGES_PER_CHALLENGE - 1)
+                    id = GetRandomFrontierLeaderTrainerId();
+                else
+                    id = GetRandomScaledFrontierTrainerId(challengeNum, gSaveBlock2Ptr->frontier.curChallengeBattleNum);
 
                 // Ensure trainer wasn't previously fought in this challenge.
                 for (i = 0; i < gSaveBlock2Ptr->frontier.curChallengeBattleNum; i++)
@@ -1023,7 +1029,7 @@ static void GetOpponentIntroSpeech(void)
 #else
     if (trainerId < FRONTIER_TRAINERS_COUNT)
 #endif //FREE_BATTLE_TOWER_E_READER
-        FrontierSpeechToString(gFacilityTrainers[trainerId].speechBefore);
+        CopyFrontierTrainerSpeech(gStringVar4, gFacilityTrainers[trainerId].facilityClass, FRONTIER_SPEECH_BEFORE);
     else if (trainerId < TRAINER_RECORD_MIXING_APPRENTICE)
         FrontierSpeechToString(gSaveBlock2Ptr->frontier.towerRecords[trainerId - TRAINER_RECORD_MIXING_FRIEND].greeting);
     else

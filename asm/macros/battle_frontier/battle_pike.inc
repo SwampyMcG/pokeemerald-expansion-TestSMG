@@ -169,3 +169,11 @@
 	setvar VAR_0x8004, BATTLE_PIKE_FUNC_INIT
 	special CallBattlePikeFunction
 	.endm
+
+	@ Award a small flat Battle Points bonus (PIKE_BONUS_POINTS_* in constants/battle_pike.h)
+	@ for clearing a risky room, separate from the run-ending frontier_givepoints payout
+	.macro pike_givebonuspoints amount:req
+	setvar VAR_0x8004, BATTLE_PIKE_FUNC_GIVE_BONUS_POINTS
+	setvar VAR_0x8005, \amount
+	special CallBattlePikeFunction
+	.endm

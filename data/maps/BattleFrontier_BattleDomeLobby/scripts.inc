@@ -51,6 +51,8 @@ BattleFrontier_BattleDomeLobby_EventScript_WonChallenge::
 
 BattleFrontier_BattleDomeLobby_EventScript_DefeatedAce::
 	msgbox BattleFrontier_BattleDomeLobby_Text_CongratsDefeatedTucker, MSGBOX_DEFAULT
+	msgbox BattleFrontier_BattleDomeLobby_Text_AwardGoldBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_GOLD_BOTTLE_CAP
 BattleFrontier_BattleDomeLobby_EventScript_GiveBattlePoints::
 	msgbox BattleFrontier_BattleDomeLobby_Text_AwardTheseBattlePoints, MSGBOX_DEFAULT
 	frontier_givepoints
@@ -643,6 +645,10 @@ BattleFrontier_BattleDomeLobby_Text_CongratsDefeatedTucker:
 	.string "Congratulations!\p"
 	.string "You defeated the DOME ACE and won\n"
 	.string "the Battle Tournament!$"
+
+BattleFrontier_BattleDomeLobby_Text_AwardGoldBottleCap:
+	.string "And for defeating a FRONTIER BRAIN,\n"
+	.string "please take this.$"
 
 BattleFrontier_BattleDomeLobby_Text_AwardTheseBattlePoints:
 	.string "In recognition of your strategy--\n"

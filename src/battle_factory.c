@@ -100,24 +100,24 @@ static const u8 sFixedIVTable[][2] =
 static const u16 sInitialRentalMonRanges[][2] =
 {
     // Level 50
-    {FRONTIER_MON_MUK_A,     FRONTIER_MON_FURRET_1},   // 110 - 199
-    {FRONTIER_MON_GABITE, FRONTIER_MON_CLOYSTER_1}, // 162 - 266
-    {FRONTIER_MON_DELCATTY_2, FRONTIER_MON_CLOYSTER_2}, // 267 - 371
-    {FRONTIER_MON_DUGTRIO_1,  FRONTIER_MON_SLAKING_1},  // 372 - 467
-    {FRONTIER_MON_DUGTRIO_2,  FRONTIER_MON_SLAKING_2},  // 468 - 563
-    {FRONTIER_MON_DUGTRIO_3,  FRONTIER_MON_SLAKING_3},  // 564 - 659
-    {FRONTIER_MON_DUGTRIO_4,  FRONTIER_MON_SLAKING_4},  // 660 - 755
-    {FRONTIER_MON_DUGTRIO_1,  FRONTIER_MONS_HIGH_TIER}, // 372 - 849
+    {FRONTIER_MON_AMOONGUSS,     FRONTIER_MON_FURRET_1},   // low tier window A
+    {FRONTIER_MON_GABITE, FRONTIER_MON_CLOYSTER_1}, // low tier window B
+    {FRONTIER_MON_DELCATTY_2, FRONTIER_MON_CLOYSTER_2}, // low tier window C
+    {FRONTIER_MON_DUGTRIO_1,  FRONTIER_MON_SLAKING_1},  // mid-tier window A
+    {FRONTIER_MON_DUGTRIO_2,  FRONTIER_MON_SLAKING_2},  // mid-tier window B
+    {FRONTIER_MON_DUGTRIO_1,  FRONTIER_MONS_HIGH_TIER}, // full mid+high tier
+    {FRONTIER_MON_DUGTRIO_1,  FRONTIER_MONS_HIGH_TIER}, // full mid+high tier
+    {FRONTIER_MON_DUGTRIO_1,  FRONTIER_MONS_HIGH_TIER}, // full mid+high tier
 
     // Open level
-    {FRONTIER_MON_DUGTRIO_1, FRONTIER_MON_SLAKING_1}, // 372 - 467
-    {FRONTIER_MON_DUGTRIO_2, FRONTIER_MON_SLAKING_2}, // 468 - 563
-    {FRONTIER_MON_DUGTRIO_3, FRONTIER_MON_SLAKING_3}, // 564 - 659
-    {FRONTIER_MON_DUGTRIO_4, FRONTIER_MON_SLAKING_4}, // 660 - 755
-    {FRONTIER_MON_DUGTRIO_1, NUM_FRONTIER_MONS - 1},  // 372 - 881
-    {FRONTIER_MON_DUGTRIO_1, NUM_FRONTIER_MONS - 1},  // 372 - 881
-    {FRONTIER_MON_DUGTRIO_1, NUM_FRONTIER_MONS - 1},  // 372 - 881
-    {FRONTIER_MON_DUGTRIO_1, NUM_FRONTIER_MONS - 1},  // 372 - 881
+    {FRONTIER_MON_DUGTRIO_1, FRONTIER_MON_SLAKING_1}, // mid-tier window A
+    {FRONTIER_MON_DUGTRIO_2, FRONTIER_MON_SLAKING_2}, // mid-tier window B
+    {FRONTIER_MON_DUGTRIO_1, NUM_FRONTIER_MONS - 1},  // full range
+    {FRONTIER_MON_DUGTRIO_1, NUM_FRONTIER_MONS - 1},  // full range
+    {FRONTIER_MON_DUGTRIO_1, NUM_FRONTIER_MONS - 1},  // full range
+    {FRONTIER_MON_DUGTRIO_1, NUM_FRONTIER_MONS - 1},  // full range
+    {FRONTIER_MON_DUGTRIO_1, NUM_FRONTIER_MONS - 1},  // full range
+    {FRONTIER_MON_DUGTRIO_1, NUM_FRONTIER_MONS - 1},  // full range
 };
 
 // code
@@ -247,8 +247,14 @@ static void GenerateOpponentMons(void)
 
     do
     {
-        // Choose a random trainer, ensuring no repeats in this challenge
-        trainerId = GetRandomScaledFrontierTrainerId(challengeNum, gSaveBlock2Ptr->frontier.curChallengeBattleNum);
+        // Choose a random trainer, ensuring no repeats in this challenge.
+        // The round-ending battle goes to a Frontier Leader instead of a random "hard
+        // tier" trainer, unless the Frontier Brain is appearing this round (the script
+        // already branches away from this path in that case).
+        if (gSaveBlock2Ptr->frontier.curChallengeBattleNum == FRONTIER_STAGES_PER_CHALLENGE - 1)
+            trainerId = GetRandomFrontierLeaderTrainerId();
+        else
+            trainerId = GetRandomScaledFrontierTrainerId(challengeNum, gSaveBlock2Ptr->frontier.curChallengeBattleNum);
         for (i = 0; i < gSaveBlock2Ptr->frontier.curChallengeBattleNum; i++)
         {
             if (gSaveBlock2Ptr->frontier.trainerIds[i] == trainerId)

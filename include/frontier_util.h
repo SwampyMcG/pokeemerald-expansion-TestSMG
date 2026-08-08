@@ -2,8 +2,10 @@
 #define GUARD_FRONTIER_UTIL_H
 
 #include "constants/species.h"
+#include "constants/frontier_speech.h"
 
 void CallFrontierUtilFunc(void);
+void CopyFrontierTrainerSpeech(u8 *dest, u8 facilityClass, enum FrontierSpeechCategory category);
 u8 GetFrontierBrainStatus(void);
 void CopyFrontierTrainerText(u8 whichText, u16 trainerId);
 void ResetWinStreaks(void);
@@ -30,6 +32,7 @@ void ClearEnemyPartyAfterChallenge(void);
 bool8 IsFrontierTrainerFemale(u16 trainerId);
 u8 GetFrontierTrainerFixedIvs(u16 trainerId);
 u16 GetRandomScaledFrontierTrainerId(u8 challengeNum, u8 battleNum);
+u16 GetRandomFrontierLeaderTrainerId(void);
 void SetBattleFacilityTrainerGfxId(u16 trainerId, u8 tempVarId);
 u16 GetBattleFacilityTrainerGfxId(u16 trainerId);
 u8 GetFrontierTrainerFrontSpriteId(u16 trainerId);

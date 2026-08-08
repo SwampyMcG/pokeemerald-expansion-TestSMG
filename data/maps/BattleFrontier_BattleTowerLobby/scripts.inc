@@ -62,12 +62,22 @@ BattleFrontier_BattleTowerLobby_EventScript_WonChallenge::
 	faceplayer
 	frontier_isbrain
 	goto_if_eq VAR_RESULT, TRUE, BattleFrontier_BattleTowerLobby_EventScript_DefeatedMaiden
+	frontier_isleader
+	goto_if_eq VAR_RESULT, TRUE, BattleFrontier_BattleTowerLobby_EventScript_DefeatedLeader
 	message BattleFrontier_BattleTowerLobby_Text_CongratsBeatenSeven
 	waitmessage
 	goto BattleFrontier_BattleTowerLobby_EventScript_GiveRibbons
 
+BattleFrontier_BattleTowerLobby_EventScript_DefeatedLeader::
+	msgbox BattleFrontier_BattleTowerLobby_Text_DefeatedLeader, MSGBOX_DEFAULT
+	msgbox BattleFrontier_BattleTowerLobby_Text_AwardSilverBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_BOTTLE_CAP
+	goto BattleFrontier_BattleTowerLobby_EventScript_GiveRibbons
+
 BattleFrontier_BattleTowerLobby_EventScript_DefeatedMaiden::
 	msgbox BattleFrontier_BattleTowerLobby_Text_CongratsDefeatedMaiden, MSGBOX_DEFAULT
+	msgbox BattleFrontier_BattleTowerLobby_Text_AwardGoldBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_GOLD_BOTTLE_CAP
 BattleFrontier_BattleTowerLobby_EventScript_GiveRibbons::
 	tower_giveribbons
 	goto_if_eq VAR_RESULT, FALSE, BattleFrontier_BattleTowerLobby_EventScript_GiveBattlePoints
@@ -941,6 +951,19 @@ BattleFrontier_BattleTowerLobby_Text_CongratsBeatenSeven:
 	.string "Congratulations!\n"
 	.string "You've beaten all seven TRAINERS!\p"
 	.string "$"
+
+BattleFrontier_BattleTowerLobby_Text_DefeatedLeader:
+	.string "Incredible! You've defeated a visiting\n"
+	.string "GYM LEADER!\p"
+	.string "$"
+
+BattleFrontier_BattleTowerLobby_Text_AwardSilverBottleCap:
+	.string "As a token of that victory, please\n"
+	.string "take this.$"
+
+BattleFrontier_BattleTowerLobby_Text_AwardGoldBottleCap:
+	.string "And for defeating a FRONTIER BRAIN,\n"
+	.string "please take this as well.$"
 
 @ Unused
 BattleFrontier_BattleTowerLobby_Text_EarnedFabulousPrize:

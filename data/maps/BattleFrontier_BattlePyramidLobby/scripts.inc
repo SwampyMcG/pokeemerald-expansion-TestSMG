@@ -48,6 +48,8 @@ BattleFrontier_BattlePyramidLobby_EventScript_WonChallenge::
 
 BattleFrontier_BattlePyramidLobby_EventScript_DefeatedKing::
 	msgbox BattleFrontier_BattlePyramidLobby_Text_YouveDefeatedPyramidKing, MSGBOX_DEFAULT
+	msgbox BattleFrontier_BattlePyramidLobby_Text_AwardGoldBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_GOLD_BOTTLE_CAP
 BattleFrontier_BattlePyramidLobby_EventScript_GiveBattlePoints::
 	special DoBattlePyramidMonsHaveHeldItem
 	call_if_eq VAR_RESULT, TRUE, BattleFrontier_BattlePyramidLobby_EventScript_StoreHeldItemsInPyramidBag
@@ -857,6 +859,10 @@ BattleFrontier_BattlePyramidLobby_Text_YouveDefeatedPyramidKing:
 	.string "You've done the unthinkable!\p"
 	.string "You've defeated the PYRAMID KING\n"
 	.string "and conquered the BATTLE PYRAMID!$"
+
+BattleFrontier_BattlePyramidLobby_Text_AwardGoldBottleCap:
+	.string "And for defeating a FRONTIER BRAIN,\n"
+	.string "please take this.$"
 
 BattleFrontier_BattlePyramidLobby_Text_GiveYouTheseBattlePoints:
 	.string "Young explorer!\n"

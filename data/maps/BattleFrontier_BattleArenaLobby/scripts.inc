@@ -39,11 +39,21 @@ BattleFrontier_BattleArenaLobby_EventScript_WonChallenge::
 	lockall
 	frontier_isbrain
 	goto_if_eq VAR_RESULT, TRUE, BattleFrontier_BattleArenaLobby_EventScript_DefeatedTycoon
+	frontier_isleader
+	goto_if_eq VAR_RESULT, TRUE, BattleFrontier_BattleArenaLobby_EventScript_DefeatedLeader
 	msgbox BattleFrontier_BattleArenaLobby_Text_CongratsOnSevenWins, MSGBOX_DEFAULT
+	goto BattleFrontier_BattleArenaLobby_EventScript_GiveBattlePoints
+
+BattleFrontier_BattleArenaLobby_EventScript_DefeatedLeader::
+	msgbox BattleFrontier_BattleArenaLobby_Text_DefeatedLeader, MSGBOX_DEFAULT
+	msgbox BattleFrontier_BattleArenaLobby_Text_AwardSilverBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_BOTTLE_CAP
 	goto BattleFrontier_BattleArenaLobby_EventScript_GiveBattlePoints
 
 BattleFrontier_BattleArenaLobby_EventScript_DefeatedTycoon::
 	msgbox BattleFrontier_BattleArenaLobby_Text_CongratsOnDefeatingTycoon, MSGBOX_DEFAULT
+	msgbox BattleFrontier_BattleArenaLobby_Text_AwardGoldBottleCap, MSGBOX_DEFAULT
+	giveitem ITEM_GOLD_BOTTLE_CAP
 BattleFrontier_BattleArenaLobby_EventScript_GiveBattlePoints::
 	msgbox BattleFrontier_BattleArenaLobby_Text_PleaseAcceptBattlePoints, MSGBOX_DEFAULT
 	frontier_givepoints
@@ -573,6 +583,19 @@ BattleFrontier_BattleArenaLobby_Text_CongratsOnDefeatingTycoon:
 	.string "TYCOON, and a seven-TRAINER sweep!\p"
 	.string "We congratulate you on your most\n"
 	.string "splendid challenge!$"
+
+BattleFrontier_BattleArenaLobby_Text_DefeatedLeader:
+	.string "Incredible! You've defeated a visiting\n"
+	.string "GYM LEADER!\p"
+	.string "$"
+
+BattleFrontier_BattleArenaLobby_Text_AwardSilverBottleCap:
+	.string "As a token of that victory, please\n"
+	.string "take this.$"
+
+BattleFrontier_BattleArenaLobby_Text_AwardGoldBottleCap:
+	.string "And for defeating a FRONTIER BRAIN,\n"
+	.string "please take this.$"
 
 BattleFrontier_BattleArenaLobby_Text_PleaseAcceptBattlePoints:
 	.string "My dear challenger, in recognition of\n"

@@ -510,7 +510,7 @@ struct BattleFrontier
     /*0xE10*/ u8 pikeHintedRoomIndex:3;
               u8 pikeHintedRoomType:4;
               u8 pikeHealingRoomsDisabled:1;
-    /*0xE11*/ //u8 padding2;
+    /*0xE11*/ u8 pikePendingConfusion; // Set by a Status room's curse; consumed the next time a Pike battle starts.
     /*0xE12*/ u16 pikeHeldItemsBackup[FRONTIER_PARTY_SIZE];
     /*0xE18*/ u16 pyramidPrize;
     /*0xE1A*/ u16 pyramidWinStreaks[FRONTIER_LVL_MODE_COUNT];
